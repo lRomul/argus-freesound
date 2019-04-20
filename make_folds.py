@@ -15,6 +15,8 @@ if __name__ == '__main__':
 
     train_curated_df = pd.read_csv(config.train_curated_csv_path)
     train_curated_df['fold'] = -1
+    file_paths = train_curated_df.fname.apply(lambda x: config.train_curated_dir / x)
+    train_curated_df['file_path'] = file_paths
 
     kf = KFold(n_splits=config.n_folds, random_state=random_state, shuffle=True)
 
