@@ -29,7 +29,8 @@ RUN pip3 install --no-cache-dir \
     jupyter==1.0.0 \
     scikit-learn==0.20.2 \
     scikit-image==0.14.2 \
-    librosa==0.6.3
+    librosa==0.6.3 \
+    cnn-finetune==0.5.3
 
 ENV PYTHONPATH $PYTHONPATH:/workdir
 ENV TORCH_HOME=/workdir/data/.torch
