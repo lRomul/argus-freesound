@@ -13,19 +13,19 @@ from src import config
 
 
 EXPERIMENT_NAME = 'test_001'
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 CROP_SIZE = 128
 SAVE_DIR = f'/workdir/data/experiments/{EXPERIMENT_NAME}'
 FOLDS = config.folds
 PARAMS = {
     'nn_module': {
-        'model_name': 'resnet34',
+        'model_name': 'resnet18',
         'num_classes': len(config.classes),
         'pretrained': False,
         'dropout_p': 0.2
     },
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.001}),
+    'optimizer': ('Adam', {'lr': 0.0001}),
     'device': 'cuda'
 }
 
@@ -41,9 +41,9 @@ def train_fold(save_dir, train_folds, val_folds):
     model = CnnFinetune(PARAMS)
 
     callbacks = [
-        MonitorCheckpoint(save_dir, monitor='val_multi_accuracy', max_saves=3),
-        ReduceLROnPlateau(monitor='val_multi_accuracy', patience=20, factor=0.64, min_lr=1e-8),
-        EarlyStopping(monitor='val_multi_accuracy', patience=50),
+        MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=3),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=20, factor=0.64, min_lr=1e-8),
+        EarlyStopping(monitor='val_lwlrap', patience=50),
         LoggingToFile(os.path.join(save_dir, 'log.txt')),
     ]
 
@@ -51,7 +51,7 @@ def train_fold(save_dir, train_folds, val_folds):
               val_loader=val_loader,
               max_epochs=150,
               callbacks=callbacks,
-              metrics=['multi_accuracy'])
+              metrics=['multi_accuracy', 'lwlrap'])
 
 
 if __name__ == "__main__":
