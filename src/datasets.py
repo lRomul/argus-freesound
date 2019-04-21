@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 import pandas as pd
 import multiprocessing as mp
 from torch.utils.data import Dataset
@@ -20,7 +20,7 @@ def get_samples(folds):
             continue
 
         audio_paths_lst.append(row.file_path)
-        target = np.zeros(len(config.classes))
+        target = torch.zeros(len(config.classes))
         for label in row.labels.split(','):
             target[config.class2index[label]] = 1.
         targets_lst.append(target)
