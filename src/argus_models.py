@@ -1,8 +1,10 @@
-from cnn_finetune import make_model
-
 from argus import Model
 from src.metrics import MultiCategoricalAccuracy, Lwlrap
 
+from src.models.resnet import resnet18
 
-class CnnFinetune(Model):
-    nn_module = make_model
+
+class FreesoundModel(Model):
+    nn_module = {
+        'resnet18': resnet18
+    }

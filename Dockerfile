@@ -22,15 +22,13 @@ RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-c
 # Install python ML packages
 RUN pip3 install --no-cache-dir \
     opencv-python==3.4.2.17 \
-    pytorch-argus==0.0.8 \
     scipy==1.2.1 \
     matplotlib==3.0.3 \
     pandas==0.24.1 \
     jupyter==1.0.0 \
     scikit-learn==0.20.2 \
     scikit-image==0.14.2 \
-    librosa==0.6.3 \
-    cnn-finetune==0.5.3
+    librosa==0.6.3
 
 ENV PYTHONPATH $PYTHONPATH:/workdir
 ENV TORCH_HOME=/workdir/data/.torch

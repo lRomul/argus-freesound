@@ -1,4 +1,3 @@
-import os
 import json
 
 from argus.callbacks import MonitorCheckpoint, \
@@ -8,24 +7,22 @@ from torch.utils.data import DataLoader
 
 from src.datasets import FreesoundDataset
 from src.transforms import get_transforms
-from src.argus_models import CnnFinetune
+from src.argus_models import FreesoundModel
 from src import config
 
 
-EXPERIMENT_NAME = 'test_001'
-BATCH_SIZE = 64
+EXPERIMENT_NAME = 'test_003'
+BATCH_SIZE = 128
 CROP_SIZE = 128
-SAVE_DIR = f'/workdir/data/experiments/{EXPERIMENT_NAME}'
+SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
 FOLDS = config.folds
 PARAMS = {
-    'nn_module': {
-        'model_name': 'resnet18',
+    'nn_module': ('resnet18', {
         'num_classes': len(config.classes),
-        'pretrained': False,
-        'dropout_p': 0.2
-    },
+        'pretrained': False
+    }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.0001}),
+    'optimizer': ('Adam', {'lr': 0.001}),
     'device': 'cuda'
 }
 
@@ -38,13 +35,13 @@ def train_fold(save_dir, train_folds, val_folds):
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
                             shuffle=False, num_workers=4)
 
-    model = CnnFinetune(PARAMS)
+    model = FreesoundModel(PARAMS)
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=3),
         ReduceLROnPlateau(monitor='val_lwlrap', patience=20, factor=0.64, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=50),
-        LoggingToFile(os.path.join(save_dir, 'log.txt')),
+        LoggingToFile(save_dir / 'log.txt'),
     ]
 
     model.fit(train_loader,
@@ -55,21 +52,21 @@ def train_fold(save_dir, train_folds, val_folds):
 
 
 if __name__ == "__main__":
-    if not os.path.exists(SAVE_DIR):
-        os.makedirs(SAVE_DIR)
+    if not SAVE_DIR.exists():
+        SAVE_DIR.mkdir(parents=True, exist_ok=True)
     else:
         print(f"Folder {SAVE_DIR} already exists.")
 
-    with open(os.path.join(SAVE_DIR, 'source.py'), 'w') as outfile:
+    with open(SAVE_DIR / 'source.py', 'w') as outfile:
         outfile.write(open(__file__).read())
 
-    with open(os.path.join(SAVE_DIR, 'params.json'), 'w') as outfile:
+    with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
     for i in range(len(FOLDS)):
         val_folds = [FOLDS[i]]
         train_folds = FOLDS[:i] + FOLDS[i + 1:]
-        save_fold_dir = os.path.join(SAVE_DIR, f'fold_{FOLDS[i]}')
+        save_fold_dir = SAVE_DIR / f'fold_{FOLDS[i]}'
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
         train_fold(save_fold_dir, train_folds, val_folds)

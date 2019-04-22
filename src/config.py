@@ -1,15 +1,26 @@
 from pathlib import Path
+import os
 
-data_dir = Path('/workdir/data/')
-train_curated_dir = data_dir / 'train_curated'
-train_noisy_dir = data_dir / 'train_noisy'
-train_curated_csv_path = data_dir / 'train_curated.csv'
-train_noisy_csv_path = data_dir / 'train_noisy.csv'
-test_dir = data_dir / 'test'
+kernel = False
+if 'MODE' in os.environ and os.environ['MODE'] == 'kernel':
+    kernel = True
 
-sample_submission = data_dir / 'sample_submission.csv'
-train_folds_path = data_dir / 'train_folds.csv'
-experiments_dir = data_dir / 'experiments'
+if kernel:
+    input_data_dir = Path('../input')
+    save_data_dir = Path('.')
+else:
+    input_data_dir = Path('/workdir/data/')
+    save_data_dir = Path('/workdir/data/')
+
+train_curated_dir = input_data_dir / 'train_curated'
+train_noisy_dir = input_data_dir / 'train_noisy'
+train_curated_csv_path = input_data_dir / 'train_curated.csv'
+train_noisy_csv_path = input_data_dir / 'train_noisy.csv'
+test_dir = input_data_dir / 'test'
+sample_submission = input_data_dir / 'sample_submission.csv'
+
+train_folds_path = save_data_dir / 'train_folds.csv'
+experiments_dir = save_data_dir / 'experiments'
 
 n_folds = 5
 folds = list(range(n_folds))
