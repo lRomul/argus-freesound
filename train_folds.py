@@ -5,17 +5,16 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset
+from src.datasets import FreesoundDataset, get_folds_data
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
 from src import config
 
 
-EXPERIMENT_NAME = 'test_003'
+EXPERIMENT_NAME = 'test_004'
 BATCH_SIZE = 128
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
-FOLDS = config.folds
 PARAMS = {
     'nn_module': ('resnet18', {
         'num_classes': len(config.classes),
@@ -27,13 +26,15 @@ PARAMS = {
 }
 
 
-def train_fold(save_dir, train_folds, val_folds):
-    train_dataset = FreesoundDataset(train_folds, get_transforms(True, CROP_SIZE))
-    val_dataset = FreesoundDataset(val_folds, get_transforms(False, CROP_SIZE))
+def train_fold(save_dir, train_folds, val_folds, folds_data):
+    train_dataset = FreesoundDataset(folds_data, train_folds,
+                                     get_transforms(True, CROP_SIZE))
+    val_dataset = FreesoundDataset(folds_data, val_folds,
+                                   get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
-                              shuffle=True, drop_last=True, num_workers=4)
+                              shuffle=True, drop_last=True, num_workers=2)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
-                            shuffle=False, num_workers=4)
+                            shuffle=False, num_workers=2)
 
     model = FreesoundModel(PARAMS)
 
@@ -63,10 +64,13 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
-    for i in range(len(FOLDS)):
-        val_folds = [FOLDS[i]]
-        train_folds = FOLDS[:i] + FOLDS[i + 1:]
-        save_fold_dir = SAVE_DIR / f'fold_{FOLDS[i]}'
+    print("Start load train data")
+    folds_data = get_folds_data()
+
+    for fold in config.folds:
+        val_folds = [fold]
+        train_folds = list(set(config.folds) - set(val_folds))
+        save_fold_dir = SAVE_DIR / f'fold_{fold}'
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
-        train_fold(save_fold_dir, train_folds, val_folds)
+        train_fold(save_fold_dir, train_folds, val_folds, folds_data)
