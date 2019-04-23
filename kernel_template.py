@@ -1,13 +1,8 @@
 import gzip
 import base64
 import os
-import sys
-import logging
 from pathlib import Path
 from typing import Dict
-
-
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 # this is base64 encoded source code
