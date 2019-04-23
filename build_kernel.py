@@ -31,8 +31,11 @@ def clone_package(git_url):
 
 
 def build_script(ignore_list, packages):
-    to_encode = [p for p in Path('.').glob('**/*.py')
-                 if check_ignore(p, ignore_list+packages)]
+    to_encode = []
+
+    for path in Path('.').glob('**/*.py'):
+        if check_ignore(path, ignore_list + packages):
+            to_encode.append(path)
 
     for package in packages:
         clone_package(package)

@@ -23,3 +23,4 @@ def run(command):
 run('cd argus && python setup.py install')
 run('python make_folds.py')
 run('python train_folds.py')
+run('python predict_folds.py')

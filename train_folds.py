@@ -11,7 +11,7 @@ from src.argus_models import FreesoundModel
 from src import config
 
 
-EXPERIMENT_NAME = 'test_004'
+EXPERIMENT_NAME = 'test_007'
 BATCH_SIZE = 128
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
@@ -47,7 +47,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
 
     model.fit(train_loader,
               val_loader=val_loader,
-              max_epochs=150,
+              max_epochs=300,
               callbacks=callbacks,
               metrics=['multi_accuracy', 'lwlrap'])
 

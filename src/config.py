@@ -21,6 +21,7 @@ sample_submission = input_data_dir / 'sample_submission.csv'
 
 train_folds_path = save_data_dir / 'train_folds.csv'
 experiments_dir = save_data_dir / 'experiments'
+predictions_dir = save_data_dir / 'predictions'
 
 n_folds = 5
 folds = list(range(n_folds))
