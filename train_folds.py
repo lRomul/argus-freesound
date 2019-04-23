@@ -1,4 +1,5 @@
 import json
+import argparse
 
 from argus.callbacks import MonitorCheckpoint, \
     EarlyStopping, LoggingToFile, ReduceLROnPlateau
@@ -11,12 +12,15 @@ from src.argus_models import FreesoundModel
 from src import config
 
 
-EXPERIMENT_NAME = 'test_007'
+parser = argparse.ArgumentParser()
+parser.add_argument('--experiment', required=True, type=str)
+args = parser.parse_args()
+
 BATCH_SIZE = 128
 CROP_SIZE = 128
-SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
+SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('resnet18', {
+    'nn_module': ('resnet34', {
         'num_classes': len(config.classes),
         'pretrained': False
     }),
@@ -39,7 +43,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     model = FreesoundModel(PARAMS)
 
     callbacks = [
-        MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=3),
+        MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
         ReduceLROnPlateau(monitor='val_lwlrap', patience=20, factor=0.64, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=50),
         LoggingToFile(save_dir / 'log.txt'),

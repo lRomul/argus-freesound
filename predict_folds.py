@@ -1,5 +1,6 @@
 import re
 import tqdm
+import argparse
 import pandas as pd
 from pathlib import Path
 
@@ -10,9 +11,13 @@ from src.transforms import ImageToTensor
 from src import config
 
 
-EXPERIMENT_NAME = 'test_007'
-EXPERIMENT_DIR = config.experiments_dir / EXPERIMENT_NAME
-PREDICTION_DIR = config.predictions_dir / EXPERIMENT_NAME
+parser = argparse.ArgumentParser()
+parser.add_argument('--experiment', required=True, type=str)
+args = parser.parse_args()
+
+
+EXPERIMENT_DIR = config.experiments_dir / args.experiment
+PREDICTION_DIR = config.predictions_dir / args.experiment
 DEVICE = 'cuda'
 MAX_SIZE = 2048
 

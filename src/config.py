@@ -2,12 +2,18 @@ from pathlib import Path
 import os
 
 kernel = False
-if 'MODE' in os.environ and os.environ['MODE'] == 'kernel':
+kernel_mode = ""
+if 'MODE' in os.environ:
     kernel = True
+    kernel_mode = os.environ['MODE']
+    assert kernel_mode in ["train", "predict"]
 
 if kernel:
-    input_data_dir = Path('../input')
-    save_data_dir = Path('.')
+    if kernel_mode == "train":
+        input_data_dir = Path('/kaggle/input/')
+    else:
+        input_data_dir = Path('/kaggle/input/freesound-audio-tagging-2019/')
+    save_data_dir = Path('/kaggle/working/')
 else:
     input_data_dir = Path('/workdir/data/')
     save_data_dir = Path('/workdir/data/')
@@ -20,8 +26,11 @@ test_dir = input_data_dir / 'test'
 sample_submission = input_data_dir / 'sample_submission.csv'
 
 train_folds_path = save_data_dir / 'train_folds.csv'
-experiments_dir = save_data_dir / 'experiments'
 predictions_dir = save_data_dir / 'predictions'
+if kernel and kernel_mode == "predict":
+    experiments_dir = Path('/kaggle/input/freesound-train/experiments')
+else:
+    experiments_dir = save_data_dir / 'experiments'
 
 n_folds = 5
 folds = list(range(n_folds))
