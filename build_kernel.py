@@ -6,7 +6,9 @@ from pathlib import Path
 
 
 IGNORE_LIST = ["data", "build"]
-PACKAGES = ['argus']
+PACKAGES = [
+    'https://github.com/lRomul/argus.git'
+]
 
 
 def encode_file(path: Path) -> str:
@@ -14,17 +16,28 @@ def encode_file(path: Path) -> str:
     return base64.b64encode(compressed).decode('utf-8')
 
 
-def check_ignore(path: Path):
-    for ignore in IGNORE_LIST + PACKAGES:
+def check_ignore(path: Path, ignore_list):
+    for ignore in ignore_list:
         if str(path).startswith(ignore):
             return False
     return True
 
 
-def build_script():
-    to_encode = [p for p in Path('.').glob('**/*.py') if check_ignore(p)]
-    for package in PACKAGES:
-        to_encode += [p for p in Path(package).glob('**/*') if p.is_file()]
+def clone_package(git_url):
+    name = Path(git_url).stem
+    os.system(f'rm -rf {name}')
+    os.system(f'git clone {git_url}')
+    os.system(f'rm -rf {name}/.git')
+
+
+def build_script(ignore_list, packages):
+    to_encode = [p for p in Path('.').glob('**/*.py')
+                 if check_ignore(p, ignore_list+packages)]
+
+    for package in packages:
+        clone_package(package)
+        package_name = Path(package).stem
+        to_encode += [p for p in Path(package_name).glob('**/*') if p.is_file()]
 
     file_data = {str(path): encode_file(path) for path in to_encode}
     print("Encoded python files:")
@@ -37,9 +50,5 @@ def build_script():
 
 
 if __name__ == '__main__':
-    os.system('rm -rf argus')
-    os.system('git clone https://github.com/lRomul/argus.git')
-    os.system('rm -rf argus/.git')
-
     os.system('rm -rf build && mkdir build')
-    build_script()
+    build_script(IGNORE_LIST, PACKAGES)
