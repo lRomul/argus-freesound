@@ -20,9 +20,11 @@ BATCH_SIZE = 128
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('resnet34', {
+    'nn_module': ('FeatureExtractor', {
         'num_classes': len(config.classes),
-        'pretrained': False
+        'input_channels': 3,
+        'base_size': 32,
+        'dropout': 0.25
     }),
     'loss': 'BCEWithLogitsLoss',
     'optimizer': ('Adam', {'lr': 0.001}),
