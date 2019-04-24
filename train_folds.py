@@ -16,18 +16,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('FeatureExtractor', {
         'num_classes': len(config.classes),
         'input_channels': 3,
-        'base_size': 32,
-        'dropout': 0.25
+        'base_size': 64,
+        'dropout': 0.143
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.001}),
+    'optimizer': ('Adam', {'lr': 0.0003}),
     'device': 'cuda'
 }
 
@@ -46,14 +46,14 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=20, factor=0.64, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=50),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=33, factor=0.796, min_lr=1e-8),
+        EarlyStopping(monitor='val_lwlrap', patience=70),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
     model.fit(train_loader,
               val_loader=val_loader,
-              max_epochs=300,
+              max_epochs=700,
               callbacks=callbacks,
               metrics=['multi_accuracy', 'lwlrap'])
 
