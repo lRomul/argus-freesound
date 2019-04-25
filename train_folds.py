@@ -16,18 +16,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('FeatureExtractor', {
+    'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
-        'input_channels': 3,
         'base_size': 64,
-        'dropout': 0.143
+        'dropout': 0.275
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.0003}),
+    'optimizer': ('Adam', {'lr': 0.001}),
     'device': 'cuda'
 }
 
@@ -46,7 +45,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=33, factor=0.796, min_lr=1e-8),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=34, factor=0.536, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=70),
         LoggingToFile(save_dir / 'log.txt'),
     ]
