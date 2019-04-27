@@ -190,10 +190,10 @@ def get_transforms(train, size):
     if train:
         transforms = Compose([
             RandomCrop(size),
-            # UseWithProb(HorizontalFlip(), 0.25),
+            UseWithProb(HorizontalFlip(), 0.25),
             UseWithProb(SpecAugment(num_mask=2,
                                     freq_masking=0.15,
-                                    time_masking=0.20), 0.5),
+                                    time_masking=0.20), 0.25),
             ImageToTensor()
         ])
     else:
