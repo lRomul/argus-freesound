@@ -136,8 +136,12 @@ class CenterCrop:
         self.size = size
 
     def __call__(self, signal):
-        start = (signal.shape[1] - self.size) // 2
-        return signal[:, start: start + self.size]
+
+        if signal.shape[1] > self.size:
+            start = (signal.shape[1] - self.size) // 2
+            return signal[:, start: start + self.size]
+        else:
+            return signal
 
 
 def get_transforms(train, size):

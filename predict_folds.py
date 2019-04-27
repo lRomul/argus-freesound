@@ -4,10 +4,9 @@ import argparse
 import pandas as pd
 from pathlib import Path
 
-from argus import load_model
-
+from src.predictor import Predictor
 from src.audio import read_as_melspectrogram
-from src.transforms import ImageToTensor
+from src.transforms import get_transforms
 from src import config
 
 
@@ -19,24 +18,15 @@ args = parser.parse_args()
 EXPERIMENT_DIR = config.experiments_dir / args.experiment
 PREDICTION_DIR = config.predictions_dir / args.experiment
 DEVICE = 'cuda'
-MAX_SIZE = 2048
+CROP_SIZE = 128
+BATCH_SIZE = 16
 
 
-class Predictor:
-    def __init__(self, model_path, device='cuda'):
-        self.model = load_model(model_path, device=device)
-
-    def __call__(self, audio):
-        pass
-
-
-def pred_val_fold(model, fold):
+def pred_val_fold(predictor, fold):
     pass
 
 
-def pred_test_fold(model, fold):
-    image2tensor = ImageToTensor()
-
+def pred_test_fold(predictor, fold):
     subm_df = pd.read_csv(config.sample_submission)
     subm_df.set_index('fname', inplace=True)
     subm_df = subm_df.astype(float)
@@ -44,17 +34,7 @@ def pred_test_fold(model, fold):
 
     for fname in tqdm.tqdm(subm_df.index):
         image = read_as_melspectrogram(config.test_dir / fname)
-
-        if image.shape[1] > MAX_SIZE:
-            print("Maximum size exceeded:", image.shape, fname)
-            image = image[:, :MAX_SIZE]
-
-        tensor = image2tensor(image)
-        tensor = tensor.unsqueeze(dim=0)
-
-        pred = model.predict(tensor)
-        pred = pred.cpu().numpy()
-
+        pred = predictor.predict(image)
         subm_df.loc[fname] = pred
 
     fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'test'
@@ -94,19 +74,23 @@ def blend_test_predictions():
 
 
 if __name__ == "__main__":
+    transforms = get_transforms(False, CROP_SIZE)
+
     for fold in config.folds:
         print("Predict fold", fold)
         fold_dir = EXPERIMENT_DIR / f'fold_{fold}'
         model_path = get_best_model_path(fold_dir)
         print("Model path", model_path)
-        model = load_model(model_path, device=DEVICE)
+        predictor = Predictor(model_path, transforms,
+                              BATCH_SIZE, CROP_SIZE, CROP_SIZE//2,
+                              device=DEVICE)
 
         if not config.kernel:
             print("Val predict")
-            pred_val_fold(model_path, fold)
+            pred_val_fold(predictor, fold)
 
         print("Test predict")
-        pred_test_fold(model, fold)
+        pred_test_fold(predictor, fold)
 
     print("Blend folds predictions")
     blend_test_predictions()
