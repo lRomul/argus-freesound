@@ -23,10 +23,10 @@ PARAMS = {
     'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.275
+        'dropout': 0.111
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.001}),
+    'optimizer': ('Adam', {'lr': 0.0003}),
     'device': 'cuda'
 }
 
@@ -45,7 +45,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=34, factor=0.536, min_lr=1e-8),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=24, factor=0.568, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=70),
         LoggingToFile(save_dir / 'log.txt'),
     ]
