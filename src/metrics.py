@@ -20,7 +20,7 @@ class MultiCategoricalAccuracy(Metric):
 
     def update(self, step_output: dict):
         pred = step_output['prediction']
-        trg = step_output['target']
+        trg = step_output['target'].to(torch.float32)
         pred = (pred > self.threshold).to(torch.float32)
         correct = torch.eq(pred, trg).all(dim=1).view(-1)
         self.correct += torch.sum(correct).item()

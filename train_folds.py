@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from src.datasets import FreesoundDataset, get_folds_data
 from src.transforms import get_transforms
-from src.argus_models import FreesoundModel
+from src.argus_models import FreesoundApexModel
 from src import config
 
 
@@ -27,7 +27,10 @@ PARAMS = {
     }),
     'loss': 'BCEWithLogitsLoss',
     'optimizer': ('Adam', {'lr': 0.0003}),
-    'device': 'cuda'
+    'device': 'cuda',
+    'fp16_optimizer': {
+        'static_loss_scale': 128.0
+    }
 }
 
 
@@ -41,7 +44,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
                             shuffle=False, num_workers=2)
 
-    model = FreesoundModel(PARAMS)
+    model = FreesoundApexModel(PARAMS)
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
