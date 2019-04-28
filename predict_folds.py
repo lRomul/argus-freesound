@@ -1,6 +1,6 @@
 import re
-import tqdm
 import argparse
+import numpy as np
 import pandas as pd
 from pathlib import Path
 
@@ -27,15 +27,19 @@ def pred_val_fold(predictor, fold):
 
 
 def pred_test_fold(predictor, fold):
-    subm_df = pd.read_csv(config.sample_submission)
-    subm_df.set_index('fname', inplace=True)
-    subm_df = subm_df.astype(float)
-    assert all(subm_df.columns == config.classes)
-
-    for fname in tqdm.tqdm(subm_df.index):
-        image = read_as_melspectrogram(config.test_dir / fname)
+    fname_lst = []
+    pred_lst = []
+    for wav_path in config.test_dir.glob('*.wav'):
+        image = read_as_melspectrogram(wav_path)
         pred = predictor.predict(image)
-        subm_df.loc[fname] = pred
+        pred_lst.append(pred)
+        fname_lst.append(wav_path.name)
+
+    preds = np.stack(pred_lst, axis=0)
+    subm_df = pd.DataFrame(data=preds,
+                           index=fname_lst,
+                           columns=config.classes)
+    subm_df.index.name = 'fname'
 
     fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'test'
     fold_prediction_dir.mkdir(parents=True, exist_ok=True)

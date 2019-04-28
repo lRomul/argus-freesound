@@ -28,7 +28,19 @@ sample_submission = input_data_dir / 'sample_submission.csv'
 train_folds_path = save_data_dir / 'train_folds.csv'
 predictions_dir = save_data_dir / 'predictions'
 if kernel and kernel_mode == "predict":
-    experiments_dir = Path('/kaggle/input/freesound-train/experiments')
+    def find_kernel_data_dir():
+        kaggle_input = Path('/kaggle/input/')
+        train_kernel_name = 'freesound-train'
+        default = kaggle_input / train_kernel_name
+        if default.exists():
+            return default
+        else:
+            for path in kaggle_input.glob('*'):
+                if path.is_dir():
+                    if path.name.startswith(train_kernel_name):
+                        return path
+        return default
+    experiments_dir = find_kernel_data_dir() / 'experiments'
 else:
     experiments_dir = save_data_dir / 'experiments'
 
