@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Dict
 
-EXPERIMENT_NAME = 'skaggle_006'
+EXPERIMENT_NAME = 'skaggle_007'
 KERNEL_MODE = "train"  # "train" or "predict"
 
 # this is base64 encoded source code

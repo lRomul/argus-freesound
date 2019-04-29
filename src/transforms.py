@@ -191,6 +191,7 @@ def get_transforms(train, size):
         transforms = Compose([
             RandomCrop(size),
             # UseWithProb(HorizontalFlip(), 0.25),
+            UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.2),
             UseWithProb(SpecAugment(num_mask=2,
                                     freq_masking=0.15,
                                     time_masking=0.20), 0.5),

@@ -16,13 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
-        'base_size': 128,
+        'base_size': 64,
         'dropout': 0.275
     }),
     'loss': 'BCEWithLogitsLoss',
