@@ -5,9 +5,15 @@ import gzip
 from pathlib import Path
 
 
-IGNORE_LIST = ["data", "build"]
+IGNORE_LIST = ["data",
+               "build",
+               "apex/examples",
+               "apex/docs",
+               "apex/tests"]
+
 PACKAGES = [
-    'https://github.com/lRomul/argus.git'
+    'https://github.com/lRomul/argus.git',
+    'https://github.com/NVIDIA/apex'
 ]
 
 
@@ -17,6 +23,8 @@ def encode_file(path: Path) -> str:
 
 
 def check_ignore(path: Path, ignore_list):
+    if not path.is_file():
+        return False
     for ignore in ignore_list:
         if str(path).startswith(ignore):
             return False
@@ -27,6 +35,8 @@ def clone_package(git_url):
     name = Path(git_url).stem
     os.system(f'rm -rf {name}')
     os.system(f'git clone {git_url}')
+    if name == 'apex':
+        os.system(f'git checkout 855808f')
     os.system(f'rm -rf {name}/.git')
 
 
@@ -40,18 +50,20 @@ def build_script(ignore_list, packages):
     for package in packages:
         clone_package(package)
         package_name = Path(package).stem
-        to_encode += [p for p in Path(package_name).glob('**/*') if p.is_file()]
+        for path in Path(package_name).glob('**/*'):
+            if check_ignore(path, ignore_list):
+                to_encode.append(path)
 
     file_data = {str(path): encode_file(path) for path in to_encode}
     print("Encoded python files:")
     for path in file_data:
         print(path)
     template = Path('kernel_template.py').read_text('utf8')
-    Path('build/script.py').write_text(
+    Path('kernel/script.py').write_text(
         template.replace('{file_data}', str(file_data)),
         encoding='utf8')
 
 
 if __name__ == '__main__':
-    os.system('rm -rf build && mkdir build')
+    os.system('rm -rf kernel && mkdir kernel')
     build_script(IGNORE_LIST, PACKAGES)
