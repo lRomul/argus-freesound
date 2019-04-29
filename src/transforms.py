@@ -11,13 +11,10 @@ def image_crop(image, bbox):
 
 
 def gauss_noise(image, sigma_sq):
-    image = image.astype(np.uint32)
-    h, w, c = image.shape
+    h, w = image.shape
     gauss = np.random.normal(0, sigma_sq, (h, w))
     gauss = gauss.reshape(h, w)
-    image = image + np.stack([gauss for _ in range(c)], axis=2)
-    image = np.clip(image, 0, 255)
-    image = image.astype(np.uint8)
+    image = image + gauss
     return image
 
 
@@ -191,10 +188,11 @@ def get_transforms(train, size):
         transforms = Compose([
             RandomCrop(size),
             # UseWithProb(HorizontalFlip(), 0.25),
-            UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.2),
+            # UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.2),
             UseWithProb(SpecAugment(num_mask=2,
                                     freq_masking=0.15,
                                     time_masking=0.20), 0.5),
+            UseWithProb(GaussNoise(4.0), 0.3),
             ImageToTensor()
         ])
     else:
