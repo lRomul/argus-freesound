@@ -31,6 +31,12 @@ RUN pip3 install --no-cache-dir \
     librosa==0.6.3 \
     pytorch-argus==0.0.8
 
+RUN git clone https://github.com/NVIDIA/apex &&\
+    cd apex &&\
+    git checkout 855808f &&\
+    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" . &&\
+    cd .. && rm -rf apex
+
 ENV PYTHONPATH $PYTHONPATH:/workdir
 ENV TORCH_HOME=/workdir/data/.torch
 

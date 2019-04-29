@@ -18,16 +18,25 @@ args = parser.parse_args()
 
 BATCH_SIZE = 128
 CROP_SIZE = 128
+if config.kernel:
+    NUM_WORKERS = 2
+else:
+    NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.275
+        'dropout': 0.111
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.001}),
-    'device': 'cuda'
+    'optimizer': ('Adam', {'lr': 0.0003}),
+    'device': 'cuda',
+    'amp': {
+        'opt_level': 'O2',
+        'keep_batchnorm_fp32': True,
+        'loss_scale': "dynamic"
+    }
 }
 
 
@@ -37,15 +46,16 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
-                              shuffle=True, drop_last=True, num_workers=2)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
-                            shuffle=False, num_workers=2)
+                              shuffle=True, drop_last=True,
+                              num_workers=NUM_WORKERS)
+    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE * 2,
+                            shuffle=False, num_workers=NUM_WORKERS)
 
     model = FreesoundModel(PARAMS)
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=34, factor=0.536, min_lr=1e-8),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=24, factor=0.568, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=70),
         LoggingToFile(save_dir / 'log.txt'),
     ]
@@ -66,6 +76,7 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'source.py', 'w') as outfile:
         outfile.write(open(__file__).read())
 
+    print("Model params", PARAMS)
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 

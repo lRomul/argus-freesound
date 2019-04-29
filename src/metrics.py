@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import sklearn.metrics
 
 from argus.metrics.metric import Metric
 
