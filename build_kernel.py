@@ -5,15 +5,10 @@ import gzip
 from pathlib import Path
 
 
-IGNORE_LIST = ["data",
-               "build",
-               "apex/examples",
-               "apex/docs",
-               "apex/tests"]
+IGNORE_LIST = ["data", "build"]
 
 PACKAGES = [
-    'https://github.com/lRomul/argus.git',
-    'https://github.com/NVIDIA/apex'
+    'https://github.com/lRomul/argus.git'
 ]
 
 
@@ -35,8 +30,6 @@ def clone_package(git_url):
     name = Path(git_url).stem
     os.system(f'rm -rf {name}')
     os.system(f'git clone {git_url}')
-    if name == 'apex':
-        os.system(f'git checkout 855808f')
     os.system(f'rm -rf {name}/.git')
 
 

@@ -24,7 +24,6 @@ def run(command):
 
 
 run('cd argus && python setup.py install && cd .. && rm -rf argus')
-run('cd apex && pip install -v --no-cache-dir --no-dependencies --global-option="--cpp_ext" --global-option="--cuda_ext" . && cd .. && rm -rf apex')
 run('python make_folds.py')
 if KERNEL_MODE == "train":
     run(f'python train_folds.py --experiment {EXPERIMENT_NAME}')
