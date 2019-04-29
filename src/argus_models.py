@@ -1,8 +1,8 @@
 import torch
-from argus import Model
-from argus.utils import deep_to, deep_detach
+from apex import amp
 
-from apex.fp16_utils import FP16_Optimizer
+from argus import Model
+from argus.utils import deep_detach
 
 from src.models.resnet import resnet18, resnet34
 from src.models.feature_extractor import FeatureExtractor
@@ -18,41 +18,25 @@ class FreesoundModel(Model):
     }
     prediction_transform = torch.nn.Sigmoid
 
-
-class FreesoundApexModel(Model):
-    nn_module = {
-        'resnet18': resnet18,
-        'resnet34': resnet34,
-        'FeatureExtractor': FeatureExtractor,
-        'SimpleKaggle': SimpleKaggle
-    }
-    prediction_transform = torch.nn.Sigmoid
-
     def __init__(self, params):
         super().__init__(params)
-        self.nn_module = self.nn_module.half()
-        self.fp16_optimizer = FP16_Optimizer(self.optimizer,
-                                             **params['fp16_optimizer'])
+        self.nn_module, self.optimizer = amp.initialize(
+            self.nn_module, self.optimizer,
+            opt_level=params['amp']['opt_level'],
+            keep_batchnorm_fp32=params['amp']['keep_batchnorm_fp32'],
+            loss_scale=params['amp']['loss_scale']
+        )
 
-    def prepare_batch(self, batch, device):
-        input, target = batch
-        input = deep_to(input, device,
-                        dtype=torch.float16,
-                        non_blocking=True)
-        target = deep_to(target, device,
-                         dtype=torch.float16,
-                         non_blocking=True)
-        return input, target
-
-    def train_step(self, batch) -> dict:
+    def train_step(self, batch)-> dict:
         if not self.nn_module.training:
             self.nn_module.train()
-        self.fp16_optimizer.zero_grad()
+        self.optimizer.zero_grad()
         input, target = self.prepare_batch(batch, self.device)
         prediction = self.nn_module(input)
         loss = self.loss(prediction, target)
-        self.fp16_optimizer.backward(loss)
-        self.fp16_optimizer.step()
+        with amp.scale_loss(loss, self.optimizer) as scaled_loss:
+            scaled_loss.backward()
+        self.optimizer.step()
 
         prediction = deep_detach(prediction)
         target = deep_detach(target)
@@ -61,14 +45,3 @@ class FreesoundApexModel(Model):
             'target': target,
             'loss': loss.item()
         }
-
-    def predict(self, input):
-        assert self.predict_ready()
-        with torch.no_grad():
-            if self.nn_module.training:
-                self.nn_module.eval()
-            input = deep_to(input, self.device,
-                            dtype=torch.float16)
-            prediction = self.nn_module(input)
-            prediction = self.prediction_transform(prediction)
-            return prediction

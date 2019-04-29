@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import sklearn.metrics
 
 from argus.metrics.metric import Metric
 
@@ -20,7 +19,7 @@ class MultiCategoricalAccuracy(Metric):
 
     def update(self, step_output: dict):
         pred = step_output['prediction']
-        trg = step_output['target'].to(torch.float32)
+        trg = step_output['target']
         pred = (pred > self.threshold).to(torch.float32)
         correct = torch.eq(pred, trg).all(dim=1).view(-1)
         self.correct += torch.sum(correct).item()

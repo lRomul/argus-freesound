@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from src.datasets import FreesoundDataset, get_folds_data
 from src.transforms import get_transforms
-from src.argus_models import FreesoundApexModel
+from src.argus_models import FreesoundModel
 from src import config
 
 
@@ -18,6 +18,10 @@ args = parser.parse_args()
 
 BATCH_SIZE = 128
 CROP_SIZE = 128
+if config.kernel:
+    NUM_WORKERS = 2
+else:
+    NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('SimpleKaggle', {
@@ -28,8 +32,10 @@ PARAMS = {
     'loss': 'BCEWithLogitsLoss',
     'optimizer': ('Adam', {'lr': 0.0003}),
     'device': 'cuda',
-    'fp16_optimizer': {
-        'static_loss_scale': 128.0
+    'amp': {
+        'opt_level': 'O2',
+        'keep_batchnorm_fp32': True,
+        'loss_scale': "dynamic"
     }
 }
 
@@ -40,11 +46,12 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
-                              shuffle=True, drop_last=True, num_workers=2)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
-                            shuffle=False, num_workers=2)
+                              shuffle=True, drop_last=True,
+                              num_workers=NUM_WORKERS)
+    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE * 2,
+                            shuffle=False, num_workers=NUM_WORKERS)
 
-    model = FreesoundApexModel(PARAMS)
+    model = FreesoundModel(PARAMS)
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
@@ -69,6 +76,7 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'source.py', 'w') as outfile:
         outfile.write(open(__file__).read())
 
+    print("Model params", PARAMS)
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
