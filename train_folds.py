@@ -16,8 +16,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
-BATCH_SIZE = 128
-CROP_SIZE = 128
+BATCH_SIZE = 32
+CROP_SIZE = 256
 if config.kernel:
     NUM_WORKERS = 2
 else:

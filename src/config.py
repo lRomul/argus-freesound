@@ -49,12 +49,12 @@ folds = list(range(n_folds))
 
 
 sampling_rate = 44100
-hop_length = 347 * 2
+hop_length = 347
 fmin = 20
 fmax = sampling_rate // 2
-n_mels = 128
+n_mels = 128 * 2
 n_fft = n_mels * 20
-min_seconds = 2
+min_seconds = 3
 
 
 classes = [
