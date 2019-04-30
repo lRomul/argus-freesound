@@ -10,15 +10,16 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, get_folds_data
+from src.datasets import FreesoundDataset, RandomAddDataset, get_folds_data
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
 from src import config
 
 
-EXPERIMENT_NAME = 'simple_kaggle_rs_002'
+EXPERIMENT_NAME = 'skaggle_add_rs_001'
 VAL_FOLDS = [0]
 TRAIN_FOLDS = [1, 2, 3, 4]
+BATCH_SIZE = 128
 CROP_SIZE = 128
 SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
 START_FROM = 0
@@ -30,12 +31,11 @@ def train_experiment(folds_data, num):
     random.seed(num)
 
     random_params = {
-        'p_dropout': float(np.random.uniform(0.0, 0.5)),
-        'batch_size': int(np.random.choice([32, 64, 128])),
-        'base_size': int(np.random.choice([16, 32, 64])),
-        'lr': float(np.random.choice([0.003, 0.001, 0.0003])),
-        'patience': int(np.random.randint(10, 40)),
-        'factor': float(np.random.uniform(0.5, 0.8)),
+        'p_dropout': float(np.random.uniform(0.1, 0.2)),
+        'batch_size': int(np.random.choice([128])),
+        'lr': float(np.random.choice([0.001, 0.0006, 0.0003])),
+        'add_prob': float(np.random.uniform(0.3, 0.7)),
+        'min_max_add_target': float(np.random.choice([0, 0.1, 0.2]))
     }
     pprint(random_params)
 
@@ -43,7 +43,7 @@ def train_experiment(folds_data, num):
         'nn_module': ('SimpleKaggle', {
             'num_classes': len(config.classes),
             'dropout': random_params['p_dropout'],
-            'base_size': random_params['base_size']
+            'base_size': 64
         }),
         'loss': 'BCEWithLogitsLoss',
         'optimizer': ('Adam', {'lr': random_params['lr']}),
@@ -51,23 +51,23 @@ def train_experiment(folds_data, num):
     }
     pprint(params)
     try:
-        train_dataset = FreesoundDataset(folds_data, TRAIN_FOLDS,
-                                         get_transforms(True, CROP_SIZE))
+        train_dataset = RandomAddDataset(folds_data, TRAIN_FOLDS,
+                                         transform=get_transforms(True, CROP_SIZE),
+                                         max_alpha=0.5, prob=random_params['add_prob'],
+                                         min_add_target=random_params['min_max_add_target'],
+                                         max_add_target=1 - random_params['min_max_add_target'])
         val_dataset = FreesoundDataset(folds_data, VAL_FOLDS,
                                        get_transforms(False, CROP_SIZE))
-        train_loader = DataLoader(train_dataset, batch_size=random_params['batch_size'],
+        train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
                                   shuffle=True, drop_last=True, num_workers=4)
-        val_loader = DataLoader(val_dataset, batch_size=random_params['batch_size'],
+        val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
                                 shuffle=False, num_workers=4)
 
         model = FreesoundModel(params)
 
         callbacks = [
             MonitorCheckpoint(experiment_dir, monitor='val_lwlrap', max_saves=1),
-            ReduceLROnPlateau(monitor='val_lwlrap',
-                              patience=random_params['patience'],
-                              factor=random_params['factor'],
-                              min_lr=1e-8),
+            ReduceLROnPlateau(monitor='val_lwlrap', patience=24, factor=0.57, min_lr=1e-8),
             EarlyStopping(monitor='val_lwlrap', patience=50),
             LoggingToFile(experiment_dir / 'log.txt'),
         ]
