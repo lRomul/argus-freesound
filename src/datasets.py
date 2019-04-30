@@ -59,7 +59,7 @@ class FreesoundDataset(Dataset):
 
 class RandomAddDataset(Dataset):
     def __init__(self, folds_data, folds, transform=None,
-                 max_alpha=0.25, prob=0.5):
+                 max_alpha=0.5, prob=0.5):
         super().__init__()
         self.folds = folds
         self.transform = transform
@@ -86,9 +86,10 @@ class RandomAddDataset(Dataset):
         if random.random() < self.prob:
             rnd_idx = random.randint(0, self.__len__() - 1)
             rnd_image = self.images_lst[rnd_idx].copy()
+            rnd_target = self.targets_lst[rnd_idx].clone()
             rnd_image = self.transform(rnd_image)
             alpha = random.uniform(0, self.max_alpha)
             image = (1 - alpha) * image + alpha * rnd_image
+            target = (1 - alpha) * target + alpha * rnd_target
 
         return image, target
-
