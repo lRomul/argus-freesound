@@ -6,7 +6,7 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, get_folds_data
+from src.datasets import FreesoundDataset, RandomAddDataset, get_folds_data
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
 from src import config
@@ -41,8 +41,9 @@ PARAMS = {
 
 
 def train_fold(save_dir, train_folds, val_folds, folds_data):
-    train_dataset = FreesoundDataset(folds_data, train_folds,
-                                     get_transforms(True, CROP_SIZE))
+    train_dataset = RandomAddDataset(folds_data, train_folds,
+                                     transform=get_transforms(True, CROP_SIZE),
+                                     max_alpha=0.25, prob=0.5)
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,

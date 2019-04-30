@@ -1,4 +1,5 @@
 import torch
+import random
 import pandas as pd
 import multiprocessing as mp
 from torch.utils.data import Dataset
@@ -54,3 +55,40 @@ class FreesoundDataset(Dataset):
             image = self.transform(image)
 
         return image, target
+
+
+class RandomAddDataset(Dataset):
+    def __init__(self, folds_data, folds, transform=None,
+                 max_alpha=0.25, prob=0.5):
+        super().__init__()
+        self.folds = folds
+        self.transform = transform
+        self.max_alpha = max_alpha
+        self.prob = prob
+
+        self.images_lst = []
+        self.targets_lst = []
+        for img, trg, fold in zip(*folds_data):
+            if fold in folds:
+                self.images_lst.append(img)
+                self.targets_lst.append(trg)
+
+    def __len__(self):
+        return len(self.images_lst)
+
+    def __getitem__(self, idx):
+        image = self.images_lst[idx].copy()
+        target = self.targets_lst[idx].clone()
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        if random.random() < self.prob:
+            rnd_idx = random.randint(0, self.__len__() - 1)
+            rnd_image = self.images_lst[rnd_idx].copy()
+            rnd_image = self.transform(rnd_image)
+            alpha = random.uniform(0, self.max_alpha)
+            image = (1 - alpha) * image + alpha * rnd_image
+
+        return image, target
+
