@@ -59,12 +59,16 @@ class FreesoundDataset(Dataset):
 
 class RandomAddDataset(Dataset):
     def __init__(self, folds_data, folds, transform=None,
-                 max_alpha=0.5, prob=0.5):
+                 max_alpha=0.5, prob=0.5,
+                 min_add_target=0.0,
+                 max_add_target=1.0):
         super().__init__()
         self.folds = folds
         self.transform = transform
         self.max_alpha = max_alpha
         self.prob = prob
+        self.min_add_target = min_add_target
+        self.max_add_target = max_add_target
 
         self.images_lst = []
         self.targets_lst = []
@@ -91,5 +95,10 @@ class RandomAddDataset(Dataset):
             alpha = random.uniform(0, self.max_alpha)
             image = (1 - alpha) * image + alpha * rnd_image
             target = (1 - alpha) * target + alpha * rnd_target
+
+            if self.min_add_target > 0.0:
+                target[target < self.min_add_target] = 0.
+            if self.max_add_target < 1.0:
+                target[target > self.max_add_target] = 1.
 
         return image, target

@@ -43,7 +43,9 @@ PARAMS = {
 def train_fold(save_dir, train_folds, val_folds, folds_data):
     train_dataset = RandomAddDataset(folds_data, train_folds,
                                      transform=get_transforms(True, CROP_SIZE),
-                                     max_alpha=0.5, prob=0.5)
+                                     max_alpha=0.5, prob=0.5,
+                                     min_add_target=0.1,
+                                     max_add_target=0.8)
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
