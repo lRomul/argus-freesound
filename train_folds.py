@@ -21,7 +21,7 @@ args = parser.parse_args()
 BATCH_SIZE = 128
 CROP_SIZE = 128
 DATASET_SIZE = 4096
-NOISY_PROB = 0.0
+NOISY_PROB = 0.5
 ADD_PROB = 0.5
 if config.kernel:
     NUM_WORKERS = 2
