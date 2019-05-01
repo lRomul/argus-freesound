@@ -48,13 +48,22 @@ n_folds = 5
 folds = list(range(n_folds))
 
 
-sampling_rate = 44100
-hop_length = 347 * 2
-fmin = 20
-fmax = sampling_rate // 2
-n_mels = 128
-n_fft = n_mels * 20
-min_seconds = 2
+class audio:
+    sampling_rate = 44100
+    hop_length = 347 * 2
+    fmin = 20
+    fmax = sampling_rate // 2
+    n_mels = 128
+    n_fft = n_mels * 20
+    min_seconds = 2
+
+    @classmethod
+    def get_config_dict(cls):
+        config_dict = dict()
+        for key, value in cls.__dict__.items():
+            if key[:1] != '_' and key != 'get_config_dict':
+                config_dict[key] = value
+        return config_dict
 
 
 classes = [

@@ -21,11 +21,11 @@ class LqLoss(nn.Module):
 
 class OnlyNoisyLqLoss(nn.Module):
     def __init__(self, q=0.5):
+        super().__init__()
         self.lq_loss = LqLoss(q=q)
-        self.bce_loss = nn.BCEWithLogitsLoss(reduce='sum')
+        self.bce_loss = nn.BCEWithLogitsLoss(reduction='sum')
 
-    def forward(self, output, target):
-        target, noisy = target
+    def forward(self, output, target, noisy):
 
         noisy_indexes = noisy.nonzero().squeeze(1)
         curated_indexes = (noisy == 0).nonzero().squeeze(1)

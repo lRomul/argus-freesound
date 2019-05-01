@@ -5,7 +5,7 @@ import pandas as pd
 import multiprocessing as mp
 from torch.utils.data import Dataset
 
-from src.audio import read_as_melspectrogram
+from src.audio import read_as_melspectrogram, get_audio_config
 from src import config
 
 
@@ -13,6 +13,8 @@ N_WORKERS = mp.cpu_count()
 
 
 def get_folds_data():
+    print("Start generate folds data")
+    print("Audio config", get_audio_config())
     train_folds_df = pd.read_csv(config.train_folds_path)
 
     audio_paths_lst = []
@@ -55,7 +57,8 @@ class FreesoundDataset(Dataset):
         if self.transform is not None:
             image = self.transform(image)
 
-        return image, target
+        noisy = torch.tensor(0, dtype=torch.int8)
+        return image, target, noisy
 
 
 class RandomAddDataset(Dataset):
@@ -102,10 +105,13 @@ class RandomAddDataset(Dataset):
             if self.max_add_target < 1.0:
                 target[target > self.max_add_target] = 1.
 
-        return image, target
+        noisy = torch.tensor(0, dtype=torch.int8)
+        return image, target, noisy
 
 
 def get_noisy_data():
+    print("Start generate noisy data")
+    print("Audio config", get_audio_config())
     train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
 
     audio_paths_lst = []
@@ -124,10 +130,9 @@ def get_noisy_data():
 
 
 class FreesoundNoisyDataset(Dataset):
-    def __init__(self, noisy_data, transform=None, return_target=True):
+    def __init__(self, noisy_data, transform=None):
         super().__init__()
         self.transform = transform
-        self.return_target = return_target
 
         self.images_lst = []
         self.targets_lst = []
@@ -140,15 +145,13 @@ class FreesoundNoisyDataset(Dataset):
 
     def __getitem__(self, idx):
         image = self.images_lst[idx].copy()
+        target = self.targets_lst[idx].clone()
 
         if self.transform is not None:
             image = self.transform(image)
 
-        if self.return_target:
-            target = self.targets_lst[idx].clone()
-            return image, target
-        else:
-            return image
+        noisy = torch.tensor(1, dtype=torch.int8)
+        return image, target, noisy
 
 
 class CombinedDataset(Dataset):
@@ -168,11 +171,8 @@ class CombinedDataset(Dataset):
 
         if random.random() < self.noisy_prob:
             idx = random.randint(0, len(self.noisy_dataset) - 1)
-            image, target = self.noisy_dataset[idx]
-            noisy = torch.tensor(1, dtype=torch.int8)
+            return self.noisy_dataset[idx]
+
         else:
             idx = random.randint(0, len(self.curated_dataset) - 1)
-            image, target = self.curated_dataset[idx]
-            noisy = torch.tensor(0, dtype=torch.int8)
-
-        return image, (target, noisy)
+            return self.curated_dataset[idx]

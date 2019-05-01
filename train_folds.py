@@ -7,8 +7,10 @@ from argus.callbacks import MonitorCheckpoint, \
 from torch.utils.data import DataLoader
 
 from src.datasets import FreesoundDataset, RandomAddDataset, get_folds_data
+from src.datasets import CombinedDataset, FreesoundNoisyDataset, get_noisy_data
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
+from src.utils import pickle_save, pickle_load
 from src import config
 
 
@@ -18,6 +20,9 @@ args = parser.parse_args()
 
 BATCH_SIZE = 128
 CROP_SIZE = 128
+DATASET_SIZE = 4096
+NOISY_PROB = 0.0
+ADD_PROB = 0.5
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -29,7 +34,7 @@ PARAMS = {
         'base_size': 64,
         'dropout': 0.111
     }),
-    'loss': 'BCEWithLogitsLoss',
+    'loss': ('OnlyNoisyLqLoss', {'q': 0.5}),
     'optimizer': ('Adam', {'lr': 0.0003}),
     'device': 'cuda',
     'amp': {
@@ -39,13 +44,22 @@ PARAMS = {
     }
 }
 
+FOLDS_DATA_PKL_PATH = config.save_data_dir / 'folds_data.pkl'
+NOISY_DATA_PKL_PATH = config.save_data_dir / 'noisy_data.pkl'
 
-def train_fold(save_dir, train_folds, val_folds, folds_data):
-    train_dataset = RandomAddDataset(folds_data, train_folds,
-                                     transform=get_transforms(True, CROP_SIZE),
-                                     max_alpha=0.5, prob=0.5,
-                                     min_add_target=0.1,
-                                     max_add_target=0.8)
+
+def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
+    train_transfrom = get_transforms(True, CROP_SIZE)
+    curated_dataset = RandomAddDataset(folds_data, train_folds,
+                                       transform=train_transfrom,
+                                       max_alpha=0.5, prob=ADD_PROB,
+                                       min_add_target=0,
+                                       max_add_target=1)
+    noisy_dataset = FreesoundNoisyDataset(noisy_data,
+                                          transform=train_transfrom)
+    train_dataset = CombinedDataset(noisy_dataset, curated_dataset,
+                                    noisy_prob=NOISY_PROB, size=DATASET_SIZE)
+
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
@@ -83,8 +97,17 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
-    print("Start load train data")
-    folds_data = get_folds_data()
+    if FOLDS_DATA_PKL_PATH.exists():
+        folds_data = pickle_load(FOLDS_DATA_PKL_PATH)
+    else:
+        folds_data = get_folds_data()
+        pickle_save(folds_data, FOLDS_DATA_PKL_PATH)
+
+    if NOISY_DATA_PKL_PATH.exists():
+        noisy_data = pickle_load(NOISY_DATA_PKL_PATH)
+    else:
+        noisy_data = get_noisy_data()
+        pickle_save(noisy_data, NOISY_DATA_PKL_PATH)
 
     for fold in config.folds:
         val_folds = [fold]
@@ -92,4 +115,4 @@ if __name__ == "__main__":
         save_fold_dir = SAVE_DIR / f'fold_{fold}'
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
-        train_fold(save_fold_dir, train_folds, val_folds, folds_data)
+        train_fold(save_fold_dir, train_folds, val_folds, folds_data, noisy_data)

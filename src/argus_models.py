@@ -1,20 +1,25 @@
 import torch
 
 from argus import Model
-from argus.utils import deep_detach
+from argus.utils import deep_detach, deep_to
 
-from src.models.resnet import resnet18, resnet34
+from src.models import resnet
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
+from src.losses import OnlyNoisyLqLoss
 from src import config
 
 
 class FreesoundModel(Model):
     nn_module = {
-        'resnet18': resnet18,
-        'resnet34': resnet34,
+        'resnet18': resnet.resnet18,
+        'resnet34': resnet.resnet34,
         'FeatureExtractor': FeatureExtractor,
         'SimpleKaggle': SimpleKaggle
+    }
+    loss = {
+        'BCEWithLogitsLoss': torch.nn.BCEWithLogitsLoss,
+        'OnlyNoisyLqLoss': OnlyNoisyLqLoss
     }
     prediction_transform = torch.nn.Sigmoid
 
@@ -31,13 +36,19 @@ class FreesoundModel(Model):
                 loss_scale=params['amp']['loss_scale']
             )
 
+    def prepare_batch(self, batch, device):
+        input, target, noisy = batch
+        input = deep_to(input, device, non_blocking=True)
+        target = deep_to(target, device, non_blocking=True)
+        return input, target, noisy
+
     def train_step(self, batch)-> dict:
         if not self.nn_module.training:
             self.nn_module.train()
         self.optimizer.zero_grad()
-        input, target = self.prepare_batch(batch, self.device)
+        input, target, noisy = self.prepare_batch(batch, self.device)
         prediction = self.nn_module(input)
-        loss = self.loss(prediction, target)
+        loss = self.loss(prediction, target, noisy)
         if self.use_amp:
             with self.amp.scale_loss(loss, self.optimizer) as scaled_loss:
                 scaled_loss.backward()
@@ -50,5 +61,20 @@ class FreesoundModel(Model):
         return {
             'prediction': self.prediction_transform(prediction),
             'target': target,
-            'loss': loss.item()
+            'loss': loss.item(),
+            'noisy': noisy
         }
+
+    def val_step(self, batch) -> dict:
+        if self.nn_module.training:
+            self.nn_module.eval()
+        with torch.no_grad():
+            input, target, noisy = self.prepare_batch(batch, self.device)
+            prediction = self.nn_module(input)
+            loss = self.loss(prediction, target, noisy)
+            return {
+                'prediction': self.prediction_transform(prediction),
+                'target': target,
+                'loss': loss.item(),
+                'noisy': noisy
+            }
