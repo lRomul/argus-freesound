@@ -3,7 +3,11 @@ import numpy as np
 import librosa
 import librosa.display
 
-from src import config
+from src.config import audio as config
+
+
+def get_audio_config():
+    return config.get_config_dict()
 
 
 def read_audio(file_path):

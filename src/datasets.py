@@ -5,7 +5,7 @@ import pandas as pd
 import multiprocessing as mp
 from torch.utils.data import Dataset
 
-from src.audio import read_as_melspectrogram
+from src.audio import read_as_melspectrogram, get_audio_config
 from src import config
 
 
@@ -13,6 +13,8 @@ N_WORKERS = mp.cpu_count()
 
 
 def get_folds_data():
+    print("Start generate folds data")
+    print("Audio config", get_audio_config())
     train_folds_df = pd.read_csv(config.train_folds_path)
 
     audio_paths_lst = []
@@ -106,6 +108,8 @@ class RandomAddDataset(Dataset):
 
 
 def get_noisy_data():
+    print("Start generate noisy data")
+    print("Audio config", get_audio_config())
     train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
 
     audio_paths_lst = []
@@ -169,10 +173,8 @@ class CombinedDataset(Dataset):
         if random.random() < self.noisy_prob:
             idx = random.randint(0, len(self.noisy_dataset) - 1)
             image, target = self.noisy_dataset[idx]
-            noisy = torch.tensor(1, dtype=torch.int8)
         else:
             idx = random.randint(0, len(self.curated_dataset) - 1)
             image, target = self.curated_dataset[idx]
-            noisy = torch.tensor(0, dtype=torch.int8)
 
-        return image, (target, noisy)
+        return image, target

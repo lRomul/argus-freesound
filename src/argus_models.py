@@ -3,7 +3,7 @@ import torch
 from argus import Model
 from argus.utils import deep_detach
 
-from src.models.resnet import resnet18, resnet34
+from src.models import resnet
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
 from src import config
@@ -11,8 +11,8 @@ from src import config
 
 class FreesoundModel(Model):
     nn_module = {
-        'resnet18': resnet18,
-        'resnet34': resnet34,
+        'resnet18': resnet.resnet18,
+        'resnet34': resnet.resnet34,
         'FeatureExtractor': FeatureExtractor,
         'SimpleKaggle': SimpleKaggle
     }
