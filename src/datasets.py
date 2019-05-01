@@ -1,3 +1,4 @@
+import time
 import torch
 import random
 import pandas as pd
@@ -102,3 +103,76 @@ class RandomAddDataset(Dataset):
                 target[target > self.max_add_target] = 1.
 
         return image, target
+
+
+def get_noisy_data():
+    train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
+
+    audio_paths_lst = []
+    targets_lst = []
+    for i, row in train_noisy_df.iterrows():
+        audio_paths_lst.append(config.train_noisy_dir / row.fname)
+        target = torch.zeros(len(config.classes))
+        for label in row.labels.split(','):
+            target[config.class2index[label]] = 1.
+        targets_lst.append(target)
+
+    with mp.Pool(N_WORKERS) as pool:
+        images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
+
+    return images_lst, targets_lst
+
+
+class FreesoundNoisyDataset(Dataset):
+    def __init__(self, noisy_data, transform=None, return_target=True):
+        super().__init__()
+        self.transform = transform
+        self.return_target = return_target
+
+        self.images_lst = []
+        self.targets_lst = []
+        for img, trg in zip(*noisy_data):
+            self.images_lst.append(img)
+            self.targets_lst.append(trg)
+
+    def __len__(self):
+        return len(self.images_lst)
+
+    def __getitem__(self, idx):
+        image = self.images_lst[idx].copy()
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        if self.return_target:
+            target = self.targets_lst[idx].clone()
+            return image, target
+        else:
+            return image
+
+
+class CombinedDataset(Dataset):
+    def __init__(self, noisy_dataset, curated_dataset,
+                 noisy_prob=0.5, size=4096):
+        self.noisy_dataset = noisy_dataset
+        self.curated_dataset = curated_dataset
+        self.noisy_prob = noisy_prob
+        self.size = size
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        seed = int(time.time() * 1000.0) + idx
+        random.seed(seed)
+
+        if random.random() < self.noisy_prob:
+            idx = random.randint(0, len(self.noisy_dataset) - 1)
+            image, target = self.noisy_dataset[idx]
+            noisy = torch.tensor(1, dtype=torch.int8)
+        else:
+            idx = random.randint(0, len(self.curated_dataset) - 1)
+            image, target = self.curated_dataset[idx]
+            noisy = torch.tensor(0, dtype=torch.int8)
+
+        return image, (target, noisy)
