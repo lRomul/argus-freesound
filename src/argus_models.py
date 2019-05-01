@@ -6,7 +6,7 @@ from argus.utils import deep_detach, deep_to
 from src.models import resnet
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
-from src.losses import OnlyNoisyLqLoss
+from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss
 from src import config
 
 
@@ -18,8 +18,8 @@ class FreesoundModel(Model):
         'SimpleKaggle': SimpleKaggle
     }
     loss = {
-        'BCEWithLogitsLoss': torch.nn.BCEWithLogitsLoss,
-        'OnlyNoisyLqLoss': OnlyNoisyLqLoss
+        'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
+        'OnlyNoisyLSoftLoss': OnlyNoisyLSoftLoss
     }
     prediction_transform = torch.nn.Sigmoid
 
