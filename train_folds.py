@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 BATCH_SIZE = 128
 CROP_SIZE = 128
-DATASET_SIZE = 128 * 16 * 8
+DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
 ADD_PROB = 0.5
 if config.kernel:
@@ -29,17 +29,17 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('se_resnext50_32x4d', {
+    'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
-        'pretrained': None,
-        'dropout_p': None
+        'base_size': 64,
+        'dropout': 0.111
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.001}),
+    'optimizer': ('Adam', {'lr': 0.0006}),
     'device': 'cuda',
     'amp': {
         'opt_level': 'O2',
