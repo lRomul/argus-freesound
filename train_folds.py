@@ -20,9 +20,9 @@ args = parser.parse_args()
 
 BATCH_SIZE = 128
 CROP_SIZE = 128
-DATASET_SIZE = 4096
+DATASET_SIZE = 4096 * 4
 NOISY_PROB = 0.5
-ADD_PROB = 0.5
+ADD_PROB = 0.64
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -32,10 +32,14 @@ PARAMS = {
     'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.111
+        'dropout': 0.17
     }),
-    'loss': ('OnlyNoisyLSoftLoss', {'beta': 0.3}),
-    'optimizer': ('Adam', {'lr': 0.0003}),
+    'loss': ('OnlyNoisyLqLoss', {
+        'q': 0.5,
+        'noisy_weight': 0.05,
+        'curated_weight': 0.95
+    }),
+    'optimizer': ('Adam', {'lr': 0.0006}),
     'device': 'cuda',
     'amp': {
         'opt_level': 'O2',
@@ -72,7 +76,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=24, factor=0.568, min_lr=1e-8),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=12, factor=0.57, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=70),
         LoggingToFile(save_dir / 'log.txt'),
     ]

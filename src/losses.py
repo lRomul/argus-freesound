@@ -5,8 +5,8 @@ import torch.nn.functional as F
 
 def lq_loss(y_pred, y_true, q):
     eps = 1e-7
-    mul = y_pred * y_true
-    loss, _ = torch.max(mul, dim=1)
+    loss = y_pred * y_true
+    # loss, _ = torch.max(loss, dim=1)
     loss = (1 - (loss + eps) ** q) / q
     return loss.mean()
 
@@ -48,10 +48,13 @@ class LSoftLoss(nn.Module):
 
 
 class NoisyCuratedLoss(nn.Module):
-    def __init__(self, noisy_loss, curated_loss):
+    def __init__(self, noisy_loss, curated_loss,
+                 noisy_weight=0.5, curated_weight=0.5):
         super().__init__()
         self.noisy_loss = noisy_loss
         self.curated_loss = curated_loss
+        self.noisy_weight = noisy_weight
+        self.curated_weight = curated_weight
 
     def forward(self, output, target, noisy):
         batch_size = target.shape[0]
@@ -77,27 +80,36 @@ class NoisyCuratedLoss(nn.Module):
         else:
             curated_loss = 0
 
-        loss = noisy_loss + curated_loss
+        loss = noisy_loss * self.noisy_weight
+        loss += curated_loss * self.curated_weight
         return loss
 
 
 class OnlyNoisyLqLoss(nn.Module):
-    def __init__(self, q=0.5):
+    def __init__(self, q=0.5,
+                 noisy_weight=0.5,
+                 curated_weight=0.5):
         super().__init__()
         lq = LqLoss(q=q)
         bce = nn.BCEWithLogitsLoss()
-        self.loss = NoisyCuratedLoss(lq, bce)
+        self.loss = NoisyCuratedLoss(lq, bce,
+                                     noisy_weight,
+                                     curated_weight)
 
     def forward(self, output, target, noisy):
         return self.loss(output, target, noisy)
 
 
 class OnlyNoisyLSoftLoss(nn.Module):
-    def __init__(self, beta):
+    def __init__(self, beta,
+                 noisy_weight=0.5,
+                 curated_weight=0.5):
         super().__init__()
         soft = LSoftLoss(beta)
         bce = nn.BCEWithLogitsLoss()
-        self.loss = NoisyCuratedLoss(soft, bce)
+        self.loss = NoisyCuratedLoss(soft, bce,
+                                     noisy_weight,
+                                     curated_weight)
 
     def forward(self, output, target, noisy):
         return self.loss(output, target, noisy)
