@@ -129,6 +129,36 @@ def get_noisy_data():
     return images_lst, targets_lst
 
 
+def get_noisy_data_generator():
+    print("Start generate noisy data")
+    print("Audio config", get_audio_config())
+    train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
+
+    audio_paths_lst = []
+    targets_lst = []
+    for i, row in train_noisy_df.iterrows():
+        audio_paths_lst.append(config.train_noisy_dir / row.fname)
+        target = torch.zeros(len(config.classes))
+        for label in row.labels.split(','):
+            target[config.class2index[label]] = 1.
+        targets_lst.append(target)
+
+        if len(audio_paths_lst) >= 5000:
+            with mp.Pool(N_WORKERS) as pool:
+                images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
+
+            yield images_lst, targets_lst
+
+            audio_paths_lst = []
+            images_lst = []
+            targets_lst = []
+
+    with mp.Pool(N_WORKERS) as pool:
+        images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
+
+    yield images_lst, targets_lst
+
+
 class FreesoundNoisyDataset(Dataset):
     def __init__(self, noisy_data, transform=None):
         super().__init__()

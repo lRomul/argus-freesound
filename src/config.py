@@ -1,5 +1,8 @@
-from pathlib import Path
 import os
+import json
+from pathlib import Path
+from hashlib import sha1
+
 
 kernel = False
 kernel_mode = ""
@@ -44,6 +47,9 @@ if kernel and kernel_mode == "predict":
 else:
     experiments_dir = save_data_dir / 'experiments'
 
+folds_data_pkl_dir = save_data_dir / 'folds_data'
+noisy_data_pkl_dir = save_data_dir / 'noisy_data'
+
 n_folds = 5
 folds = list(range(n_folds))
 
@@ -61,9 +67,20 @@ class audio:
     def get_config_dict(cls):
         config_dict = dict()
         for key, value in cls.__dict__.items():
-            if key[:1] != '_' and key != 'get_config_dict':
+            if key[:1] != '_' and \
+                    key not in ['get_config_dict', 'get_hash']:
                 config_dict[key] = value
         return config_dict
+
+    @classmethod
+    def get_hash(cls):
+        config_dict = cls.get_config_dict()
+        hash_str = json.dumps(config_dict,
+                              sort_keys=True,
+                              ensure_ascii=False,
+                              separators=None)
+        hash_str = hash_str.encode('utf-8')
+        return sha1(hash_str).hexdigest()[:7]
 
 
 classes = [

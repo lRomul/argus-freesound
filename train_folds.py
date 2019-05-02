@@ -6,11 +6,11 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, RandomAddDataset, get_folds_data
-from src.datasets import CombinedDataset, FreesoundNoisyDataset, get_noisy_data
+from src.datasets import FreesoundDataset, RandomAddDataset
+from src.datasets import CombinedDataset, FreesoundNoisyDataset
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
-from src.utils import pickle_save, pickle_load
+from src.utils import load_folds_data, load_noisy_data
 from src import config
 
 
@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 BATCH_SIZE = 128
 CROP_SIZE = 128
-DATASET_SIZE = 4096 * 8
+DATASET_SIZE = 128 * 16 * 8
 NOISY_PROB = 0.33
 ADD_PROB = 0.5
 if config.kernel:
@@ -29,17 +29,17 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SimpleKaggle', {
+    'nn_module': ('se_resnext50_32x4d', {
         'num_classes': len(config.classes),
-        'base_size': 64,
-        'dropout': 0.111
+        'pretrained': None,
+        'dropout_p': None
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0006}),
+    'optimizer': ('Adam', {'lr': 0.001}),
     'device': 'cuda',
     'amp': {
         'opt_level': 'O2',
@@ -47,9 +47,6 @@ PARAMS = {
         'loss_scale': "dynamic"
     }
 }
-
-FOLDS_DATA_PKL_PATH = config.save_data_dir / 'folds_data.pkl'
-NOISY_DATA_PKL_PATH = config.save_data_dir / 'noisy_data.pkl'
 
 
 def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
@@ -101,17 +98,8 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
-    if FOLDS_DATA_PKL_PATH.exists():
-        folds_data = pickle_load(FOLDS_DATA_PKL_PATH)
-    else:
-        folds_data = get_folds_data()
-        pickle_save(folds_data, FOLDS_DATA_PKL_PATH)
-
-    if NOISY_DATA_PKL_PATH.exists():
-        noisy_data = pickle_load(NOISY_DATA_PKL_PATH)
-    else:
-        noisy_data = get_noisy_data()
-        pickle_save(noisy_data, NOISY_DATA_PKL_PATH)
+    noisy_data = load_noisy_data()
+    folds_data = load_folds_data()
 
     for fold in config.folds:
         val_folds = [fold]

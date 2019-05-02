@@ -4,6 +4,7 @@ from argus import Model
 from argus.utils import deep_detach, deep_to
 
 from src.models import resnet
+from src.models import senet
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
 from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss
@@ -15,7 +16,8 @@ class FreesoundModel(Model):
         'resnet18': resnet.resnet18,
         'resnet34': resnet.resnet34,
         'FeatureExtractor': FeatureExtractor,
-        'SimpleKaggle': SimpleKaggle
+        'SimpleKaggle': SimpleKaggle,
+        'se_resnext50_32x4d': senet.se_resnext50_32x4d
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
