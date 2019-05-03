@@ -1,6 +1,7 @@
 import time
 import torch
 import random
+import numpy as np
 import pandas as pd
 import multiprocessing as mp
 from torch.utils.data import Dataset
@@ -34,76 +35,58 @@ def get_folds_data():
     return images_lst, targets_lst, folds_lst
 
 
-class FreesoundDataset(Dataset):
-    def __init__(self, folds_data, folds, transform=None):
-        super().__init__()
-        self.folds = folds
-        self.transform = transform
+class RandomMixer:
+    def __init__(self, mix_prob=0.5, alpha_dist='uniform'):
+        assert alpha_dist in ['uniform', 'beta']
+        self.mix_prob = mix_prob
+        self.alpha_dist = alpha_dist
 
-        self.images_lst = []
-        self.targets_lst = []
-        for img, trg, fold in zip(*folds_data):
-            if fold in folds:
-                self.images_lst.append(img)
-                self.targets_lst.append(trg)
+    def sample_alpha(self):
+        if self.alpha_dist == 'uniform':
+            return random.uniform(0, 0.5)
+        elif self.alpha_dist == 'beta':
+            return np.random.beta(0.4, 0.4)
 
-    def __len__(self):
-        return len(self.images_lst)
-
-    def __getitem__(self, idx):
-        image = self.images_lst[idx].copy()
-        target = self.targets_lst[idx].clone()
-
-        if self.transform is not None:
-            image = self.transform(image)
-
-        noisy = torch.tensor(0, dtype=torch.uint8)
-        return image, target, noisy
-
-
-class RandomAddDataset(Dataset):
-    def __init__(self, folds_data, folds, transform=None,
-                 max_alpha=0.5, prob=0.5,
-                 min_add_target=0.0,
-                 max_add_target=1.0):
-        super().__init__()
-        self.folds = folds
-        self.transform = transform
-        self.max_alpha = max_alpha
-        self.prob = prob
-        self.min_add_target = min_add_target
-        self.max_add_target = max_add_target
-
-        self.images_lst = []
-        self.targets_lst = []
-        for img, trg, fold in zip(*folds_data):
-            if fold in folds:
-                self.images_lst.append(img)
-                self.targets_lst.append(trg)
-
-    def __len__(self):
-        return len(self.images_lst)
-
-    def __getitem__(self, idx):
-        image = self.images_lst[idx].copy()
-        target = self.targets_lst[idx].clone()
-
-        if self.transform is not None:
-            image = self.transform(image)
-
-        if random.random() < self.prob:
-            rnd_idx = random.randint(0, self.__len__() - 1)
-            rnd_image = self.images_lst[rnd_idx].copy()
-            rnd_target = self.targets_lst[rnd_idx].clone()
-            rnd_image = self.transform(rnd_image)
-            alpha = random.uniform(0, self.max_alpha)
+    def __call__(self, dataset, image, target):
+        if random.random() < self.mix_prob:
+            rnd_idx = random.randint(0, len(dataset) - 1)
+            rnd_image = dataset.images_lst[rnd_idx].copy()
+            rnd_target = dataset.targets_lst[rnd_idx].clone()
+            rnd_image = dataset.transform(rnd_image)
+            alpha = self.sample_alpha()
             image = (1 - alpha) * image + alpha * rnd_image
             target = (1 - alpha) * target + alpha * rnd_target
+        return image, target
 
-            if self.min_add_target > 0.0:
-                target[target < self.min_add_target] = 0.
-            if self.max_add_target < 1.0:
-                target[target > self.max_add_target] = 1.
+
+class FreesoundDataset(Dataset):
+    def __init__(self, folds_data, folds,
+                 transform=None,
+                 mixer=None):
+        super().__init__()
+        self.folds = folds
+        self.transform = transform
+        self.mixer = mixer
+
+        self.images_lst = []
+        self.targets_lst = []
+        for img, trg, fold in zip(*folds_data):
+            if fold in folds:
+                self.images_lst.append(img)
+                self.targets_lst.append(trg)
+
+    def __len__(self):
+        return len(self.images_lst)
+
+    def __getitem__(self, idx):
+        image = self.images_lst[idx].copy()
+        target = self.targets_lst[idx].clone()
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        if self.mixer is not None:
+            image, target = self.mixer(self, image, target)
 
         noisy = torch.tensor(0, dtype=torch.uint8)
         return image, target, noisy
@@ -160,9 +143,11 @@ def get_noisy_data_generator():
 
 
 class FreesoundNoisyDataset(Dataset):
-    def __init__(self, noisy_data, transform=None):
+    def __init__(self, noisy_data, transform=None,
+                 mixer=None):
         super().__init__()
         self.transform = transform
+        self.mixer = mixer
 
         self.images_lst = []
         self.targets_lst = []
@@ -179,6 +164,9 @@ class FreesoundNoisyDataset(Dataset):
 
         if self.transform is not None:
             image = self.transform(image)
+
+        if self.mixer is not None:
+            image, target = self.mixer(self, image, target)
 
         noisy = torch.tensor(1, dtype=torch.uint8)
         return image, target, noisy
@@ -198,6 +186,7 @@ class CombinedDataset(Dataset):
     def __getitem__(self, idx):
         seed = int(time.time() * 1000.0) + idx
         random.seed(seed)
+        np.random.seed(seed % (2**31))
 
         if random.random() < self.noisy_prob:
             idx = random.randint(0, len(self.noisy_dataset) - 1)

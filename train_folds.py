@@ -6,8 +6,8 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, RandomAddDataset
-from src.datasets import CombinedDataset, FreesoundNoisyDataset
+from src.datasets import FreesoundDataset, FreesoundNoisyDataset
+from src.datasets import CombinedDataset, RandomMixer
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
 from src.utils import load_folds_data, load_noisy_data
@@ -51,11 +51,10 @@ PARAMS = {
 
 def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
     train_transfrom = get_transforms(True, CROP_SIZE)
-    curated_dataset = RandomAddDataset(folds_data, train_folds,
+    mixer = RandomMixer(mix_prob=ADD_PROB, alpha_dist='uniform')
+    curated_dataset = FreesoundDataset(folds_data, train_folds,
                                        transform=train_transfrom,
-                                       max_alpha=0.5, prob=ADD_PROB,
-                                       min_add_target=0,
-                                       max_add_target=1)
+                                       mixer=mixer)
     noisy_dataset = FreesoundNoisyDataset(noisy_data,
                                           transform=train_transfrom)
     train_dataset = CombinedDataset(noisy_dataset, curated_dataset,
