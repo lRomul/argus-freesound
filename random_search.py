@@ -18,7 +18,7 @@ from src.utils import load_folds_data, load_noisy_data
 from src import config
 
 
-EXPERIMENT_NAME = 'noisy_lsoft_rs_001'
+EXPERIMENT_NAME = 'noisy_lsoft_rs_002'
 VAL_FOLDS = [0]
 TRAIN_FOLDS = [1, 2, 3, 4]
 BATCH_SIZE = 128
@@ -38,7 +38,7 @@ def train_experiment(folds_data, noisy_data, num):
     random.seed(num)
 
     random_params = {
-        'p_dropout': float(np.random.uniform(0.1, 0.2)),
+        'p_dropout': float(np.random.uniform(0.1, 0.3)),
         'batch_size': int(np.random.choice([128])),
         'lr': float(np.random.choice([0.001, 0.0006, 0.0003])),
         'add_prob': float(np.random.uniform(0.0, 1.0)),
@@ -100,7 +100,7 @@ def train_experiment(folds_data, noisy_data, num):
                               patience=random_params['patience'],
                               factor=random_params['factor'],
                               min_lr=1e-8),
-            EarlyStopping(monitor='val_lwlrap', patience=50),
+            EarlyStopping(monitor='val_lwlrap', patience=20),
             LoggingToFile(experiment_dir / 'log.txt'),
         ]
 
@@ -109,7 +109,7 @@ def train_experiment(folds_data, noisy_data, num):
 
         model.fit(train_loader,
                   val_loader=val_loader,
-                  max_epochs=300,
+                  max_epochs=100,
                   callbacks=callbacks,
                   metrics=['multi_accuracy', 'lwlrap'])
     except KeyboardInterrupt as e:
