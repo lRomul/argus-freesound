@@ -7,7 +7,7 @@ from src.models import resnet
 from src.models import senet
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
-from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss
+from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss, BCEMaxOutlierLoss
 from src import config
 
 
@@ -21,7 +21,8 @@ class FreesoundModel(Model):
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
-        'OnlyNoisyLSoftLoss': OnlyNoisyLSoftLoss
+        'OnlyNoisyLSoftLoss': OnlyNoisyLSoftLoss,
+        'BCEMaxOutlierLoss': BCEMaxOutlierLoss
     }
     prediction_transform = torch.nn.Sigmoid
 
@@ -42,6 +43,7 @@ class FreesoundModel(Model):
         input, target, noisy = batch
         input = deep_to(input, device, non_blocking=True)
         target = deep_to(target, device, non_blocking=True)
+        noisy = deep_to(noisy, device, non_blocking=True)
         return input, target, noisy
 
     def train_step(self, batch)-> dict:

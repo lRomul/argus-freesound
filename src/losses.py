@@ -113,3 +113,22 @@ class OnlyNoisyLSoftLoss(nn.Module):
 
     def forward(self, output, target, noisy):
         return self.loss(output, target, noisy)
+
+
+class BCEMaxOutlierLoss(nn.Module):
+    def __init__(self, alpha=0.8):
+        super().__init__()
+        self.alpha = alpha
+
+    def forward(self, output, target, noisy):
+        loss = F.binary_cross_entropy_with_logits(output, target,
+                                                  reduction='none')
+        loss = loss.mean(dim=1)
+
+        with torch.no_grad():
+            outlier_mask = loss > self.alpha * loss.max()
+            outlier_mask = outlier_mask * noisy
+            outlier_idx = (outlier_mask == 0).nonzero().squeeze(1)
+
+        loss = loss[outlier_idx].mean()
+        return loss

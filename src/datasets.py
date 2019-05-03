@@ -57,7 +57,7 @@ class FreesoundDataset(Dataset):
         if self.transform is not None:
             image = self.transform(image)
 
-        noisy = torch.tensor(0, dtype=torch.int8)
+        noisy = torch.tensor(0, dtype=torch.uint8)
         return image, target, noisy
 
 
@@ -105,7 +105,7 @@ class RandomAddDataset(Dataset):
             if self.max_add_target < 1.0:
                 target[target > self.max_add_target] = 1.
 
-        noisy = torch.tensor(0, dtype=torch.int8)
+        noisy = torch.tensor(0, dtype=torch.uint8)
         return image, target, noisy
 
 
@@ -180,7 +180,7 @@ class FreesoundNoisyDataset(Dataset):
         if self.transform is not None:
             image = self.transform(image)
 
-        noisy = torch.tensor(1, dtype=torch.int8)
+        noisy = torch.tensor(1, dtype=torch.uint8)
         return image, target, noisy
 
 
