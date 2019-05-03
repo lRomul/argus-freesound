@@ -10,22 +10,29 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, RandomAddDataset, get_folds_data
+from src.datasets import FreesoundDataset, RandomAddDataset
+from src.datasets import CombinedDataset, FreesoundNoisyDataset
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
+from src.utils import load_folds_data, load_noisy_data
 from src import config
 
 
-EXPERIMENT_NAME = 'skaggle_add_rs_001'
+EXPERIMENT_NAME = 'noisy_lsoft_rs_001'
 VAL_FOLDS = [0]
 TRAIN_FOLDS = [1, 2, 3, 4]
 BATCH_SIZE = 128
 CROP_SIZE = 128
+DATASET_SIZE = 128 * 256
+if config.kernel:
+    NUM_WORKERS = 2
+else:
+    NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
 START_FROM = 0
 
 
-def train_experiment(folds_data, num):
+def train_experiment(folds_data, noisy_data, num):
     experiment_dir = SAVE_DIR / f'{num:04}'
     np.random.seed(num)
     random.seed(num)
@@ -34,8 +41,12 @@ def train_experiment(folds_data, num):
         'p_dropout': float(np.random.uniform(0.1, 0.2)),
         'batch_size': int(np.random.choice([128])),
         'lr': float(np.random.choice([0.001, 0.0006, 0.0003])),
-        'add_prob': float(np.random.uniform(0.3, 0.7)),
-        'min_max_add_target': float(np.random.choice([0, 0.1, 0.2]))
+        'add_prob': float(np.random.uniform(0.0, 1.0)),
+        'noisy_prob': float(np.random.uniform(0.0, 1.0)),
+        'lsoft_beta': float(np.random.uniform(0.2, 0.8)),
+        'noisy_weight': float(np.random.uniform(0.3, 0.7)),
+        'patience': int(np.random.randint(2, 10)),
+        'factor': float(np.random.uniform(0.5, 0.8))
     }
     pprint(random_params)
 
@@ -45,29 +56,50 @@ def train_experiment(folds_data, num):
             'dropout': random_params['p_dropout'],
             'base_size': 64
         }),
-        'loss': 'BCEWithLogitsLoss',
+        'loss': ('OnlyNoisyLSoftLoss', {
+            'beta': random_params['lsoft_beta'],
+            'noisy_weight': random_params['noisy_weight'],
+            'curated_weight': 1 - random_params['noisy_weight']
+        }),
         'optimizer': ('Adam', {'lr': random_params['lr']}),
-        'device': 'cuda'
+        'device': 'cuda',
+        'amp': {
+            'opt_level': 'O2',
+            'keep_batchnorm_fp32': True,
+            'loss_scale': "dynamic"
+        }
     }
     pprint(params)
     try:
-        train_dataset = RandomAddDataset(folds_data, TRAIN_FOLDS,
-                                         transform=get_transforms(True, CROP_SIZE),
-                                         max_alpha=0.5, prob=random_params['add_prob'],
-                                         min_add_target=random_params['min_max_add_target'],
-                                         max_add_target=1 - random_params['min_max_add_target'])
+        train_transfrom = get_transforms(True, CROP_SIZE)
+        curated_dataset = RandomAddDataset(folds_data, TRAIN_FOLDS,
+                                           transform=train_transfrom,
+                                           max_alpha=0.5,
+                                           prob=random_params['add_prob'],
+                                           min_add_target=0,
+                                           max_add_target=1)
+        noisy_dataset = FreesoundNoisyDataset(noisy_data,
+                                              transform=train_transfrom)
+        train_dataset = CombinedDataset(noisy_dataset, curated_dataset,
+                                        noisy_prob=random_params['noisy_prob'],
+                                        size=DATASET_SIZE)
+
         val_dataset = FreesoundDataset(folds_data, VAL_FOLDS,
                                        get_transforms(False, CROP_SIZE))
-        train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
-                                  shuffle=True, drop_last=True, num_workers=4)
-        val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE,
-                                shuffle=False, num_workers=4)
+        train_loader = DataLoader(train_dataset, batch_size=random_params['batch_size'],
+                                  shuffle=True, drop_last=True,
+                                  num_workers=NUM_WORKERS)
+        val_loader = DataLoader(val_dataset, batch_size=random_params['batch_size'] * 2,
+                                shuffle=False, num_workers=NUM_WORKERS)
 
         model = FreesoundModel(params)
 
         callbacks = [
             MonitorCheckpoint(experiment_dir, monitor='val_lwlrap', max_saves=1),
-            ReduceLROnPlateau(monitor='val_lwlrap', patience=24, factor=0.57, min_lr=1e-8),
+            ReduceLROnPlateau(monitor='val_lwlrap',
+                              patience=random_params['patience'],
+                              factor=random_params['factor'],
+                              min_lr=1e-8),
             EarlyStopping(monitor='val_lwlrap', patience=50),
             LoggingToFile(experiment_dir / 'log.txt'),
         ]
@@ -88,10 +120,11 @@ def train_experiment(folds_data, num):
 
 if __name__ == "__main__":
     print("Start load train data")
-    folds_data = get_folds_data()
+    noisy_data = load_noisy_data()
+    folds_data = load_folds_data()
 
     for i in range(START_FROM, 10000):
-        train_experiment(folds_data, i)
+        train_experiment(folds_data, noisy_data, i)
         time.sleep(5.0)
         torch.cuda.empty_cache()
         time.sleep(5.0)
