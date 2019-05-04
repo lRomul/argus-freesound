@@ -2,6 +2,7 @@ import re
 import argparse
 import numpy as np
 import pandas as pd
+from scipy.stats.mstats import gmean
 from pathlib import Path
 
 from src.predictor import Predictor
@@ -66,10 +67,11 @@ def blend_test_predictions():
         probs_df.set_index('fname', inplace=True)
         probs_df_lst.append(probs_df)
 
+    blend_values = np.stack([df.values for df in probs_df_lst], axis=0)
+    blend_values = gmean(blend_values, axis=0)
+
     blend_df = probs_df_lst[0]
-    for probs_df in probs_df_lst[1:]:
-        blend_df += probs_df
-    blend_df = blend_df / len(probs_df_lst)
+    blend_df.values[:] = blend_values
 
     if config.kernel:
         blend_df.to_csv('submission.csv')
