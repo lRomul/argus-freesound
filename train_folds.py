@@ -32,9 +32,7 @@ PARAMS = {
     'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.111,
-        'se_module': True,
-        'conv_bias': False
+        'dropout': 0.111
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
@@ -53,7 +51,7 @@ PARAMS = {
 
 def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
     train_transfrom = get_transforms(True, CROP_SIZE)
-    mixer = RandomMixer(mix_prob=ADD_PROB, alpha_dist='uniform', w_rad=0.02)
+    mixer = RandomMixer(mix_prob=ADD_PROB, alpha_dist='uniform')
     curated_dataset = FreesoundDataset(folds_data, train_folds,
                                        transform=train_transfrom,
                                        mixer=mixer)
@@ -74,7 +72,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=5, factor=0.6, min_lr=1e-8),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=6, factor=0.6, min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=18),
         LoggingToFile(save_dir / 'log.txt'),
     ]

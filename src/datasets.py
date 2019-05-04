@@ -36,23 +36,16 @@ def get_folds_data():
 
 
 class RandomMixer:
-    def __init__(self, mix_prob=0.5, alpha_dist='uniform', w_rad=0.02):
+    def __init__(self, mix_prob=0.5, alpha_dist='uniform'):
         assert alpha_dist in ['uniform', 'beta']
         self.mix_prob = mix_prob
         self.alpha_dist = alpha_dist
-        self.w_rad = w_rad
 
     def sample_alpha(self):
         if self.alpha_dist == 'uniform':
             return random.uniform(0, 0.5)
         elif self.alpha_dist == 'beta':
             return np.random.beta(0.4, 0.4)
-
-    def sample_w(self):
-        if random.random() < 0.5:
-            return random.uniform(1. - self.w_rad, 1. + self.w_rad)
-        else:
-            return 1.0
 
     def __call__(self, dataset, image, target):
         if random.random() < self.mix_prob:
@@ -61,11 +54,8 @@ class RandomMixer:
             rnd_target = dataset.targets_lst[rnd_idx].clone()
             rnd_image = dataset.transform(rnd_image)
             alpha = self.sample_alpha()
-            w = self.sample_w()
-            rnd_w = self.sample_w()
-            image = w * (1 - alpha) * image + rnd_w * alpha * rnd_image
-            target = w * (1 - alpha) * target + rnd_w * alpha * rnd_target
-            target = torch.clamp(target, 0, 1)
+            image = (1 - alpha) * image + alpha * rnd_image
+            target = (1 - alpha) * target + alpha * rnd_target
         return image, target
 
 
