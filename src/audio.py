@@ -12,7 +12,7 @@ def get_audio_config():
 
 def read_audio(file_path):
     y, sr = librosa.load(file_path, sr=config.sampling_rate)
-    if 0 < len(y):
+    if config.trim and len(y) > 0:
         y, _ = librosa.effects.trim(y)  # trim, top_db=default(60)
     min_samples = config.min_seconds * config.sampling_rate
     if len(y) < min_samples:

@@ -62,6 +62,7 @@ class audio:
     n_mels = 128
     n_fft = n_mels * 20
     min_seconds = 2
+    trim = False
 
     @classmethod
     def get_config_dict(cls):
