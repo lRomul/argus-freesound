@@ -56,13 +56,12 @@ folds = list(range(n_folds))
 
 class audio:
     sampling_rate = 44100
-    hop_length = 347 * 2
+    hop_length = 345 * 2
     fmin = 20
     fmax = sampling_rate // 2
     n_mels = 128
     n_fft = n_mels * 20
-    min_seconds = 2
-    trim = False
+    min_seconds = 4
 
     @classmethod
     def get_config_dict(cls):

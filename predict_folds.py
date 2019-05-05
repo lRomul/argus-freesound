@@ -19,7 +19,7 @@ args = parser.parse_args()
 EXPERIMENT_DIR = config.experiments_dir / args.experiment
 PREDICTION_DIR = config.predictions_dir / args.experiment
 DEVICE = 'cuda'
-CROP_SIZE = 128
+CROP_SIZE = 256
 BATCH_SIZE = 16
 
 

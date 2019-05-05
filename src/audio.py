@@ -11,15 +11,26 @@ def get_audio_config():
 
 
 def read_audio(file_path):
-    y, sr = librosa.load(file_path, sr=config.sampling_rate)
-    if config.trim and len(y) > 0:
-        y, _ = librosa.effects.trim(y)  # trim, top_db=default(60)
     min_samples = config.min_seconds * config.sampling_rate
-    if len(y) < min_samples:
-        padding = min_samples - len(y)
-        offset = padding // 2
-        y = np.pad(y, (offset, padding - offset), 'constant')
-    return y
+    try:
+        y, sr = librosa.load(file_path, sr=config.sampling_rate)
+        trim_y, trim_idx = librosa.effects.trim(y)  # trim, top_db=default(60)
+
+        if len(trim_y) < min_samples:
+            center = (trim_idx[1] - trim_idx[0]) // 2
+            left_idx = max(0, center - min_samples // 2)
+            right_idx = min(len(y), center + min_samples // 2)
+            trim_y = y[left_idx:right_idx]
+
+            if len(trim_y) < min_samples:
+                padding = min_samples - len(trim_y)
+                offset = padding // 2
+                trim_y = np.pad(trim_y, (offset, padding - offset), 'constant')
+        return trim_y
+    except BaseException as e:
+        print(f"Exception while reading file {e}")
+        return np.zeros(min_samples, dtype=np.float32)
+
 
 
 def audio_to_melspectrogram(audio):
