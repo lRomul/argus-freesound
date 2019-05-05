@@ -42,7 +42,7 @@ class Predictor:
 
     def predict(self, image):
         pred = tile_prediction(self.model, image, self.transforms,
-                               (self.tile_size, self.tile_size),
-                               (self.tile_step, self.tile_step),
+                               self.tile_size,
+                               self.tile_step,
                                self.batch_size)
         return pred

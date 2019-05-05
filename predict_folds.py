@@ -88,7 +88,9 @@ if __name__ == "__main__":
         model_path = get_best_model_path(fold_dir)
         print("Model path", model_path)
         predictor = Predictor(model_path, transforms,
-                              BATCH_SIZE, CROP_SIZE, CROP_SIZE//2,
+                              BATCH_SIZE,
+                              (config.audio.n_mels, CROP_SIZE),
+                              (config.audio.n_mels, CROP_SIZE//4),
                               device=DEVICE)
 
         if not config.kernel:
