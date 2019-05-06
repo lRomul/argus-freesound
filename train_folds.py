@@ -6,8 +6,8 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, FreesoundNoisyDataset
-from src.datasets import CombinedDataset, RandomMixer
+from src.datasets import FreesoundDataset, FreesoundNoisyDataset, CombinedDataset
+from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
 from src.utils import load_folds_data, load_noisy_data
@@ -22,7 +22,7 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
-ADD_PROB = 0.5
+MIXER_PROB = 0.66
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -51,7 +51,13 @@ PARAMS = {
 
 def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
     train_transfrom = get_transforms(True, CROP_SIZE)
-    mixer = RandomMixer(mix_prob=ADD_PROB, alpha_dist='uniform')
+
+    mixer = RandomMixer([
+        SigmoidConcatMixer(sigmoid_range=(3, 12)),
+        AddMixer(alpha_dist='uniform')
+    ], p=[0.6, 0.4])
+    mixer = UseMixerWithProb(mixer, prob=MIXER_PROB)
+
     curated_dataset = FreesoundDataset(folds_data, train_folds,
                                        transform=train_transfrom,
                                        mixer=mixer)

@@ -35,30 +35,6 @@ def get_folds_data():
     return images_lst, targets_lst, folds_lst
 
 
-class RandomMixer:
-    def __init__(self, mix_prob=0.5, alpha_dist='uniform'):
-        assert alpha_dist in ['uniform', 'beta']
-        self.mix_prob = mix_prob
-        self.alpha_dist = alpha_dist
-
-    def sample_alpha(self):
-        if self.alpha_dist == 'uniform':
-            return random.uniform(0, 0.5)
-        elif self.alpha_dist == 'beta':
-            return np.random.beta(0.4, 0.4)
-
-    def __call__(self, dataset, image, target):
-        if random.random() < self.mix_prob:
-            rnd_idx = random.randint(0, len(dataset) - 1)
-            rnd_image = dataset.images_lst[rnd_idx].copy()
-            rnd_target = dataset.targets_lst[rnd_idx].clone()
-            rnd_image = dataset.transform(rnd_image)
-            alpha = self.sample_alpha()
-            image = (1 - alpha) * image + alpha * rnd_image
-            target = (1 - alpha) * target + alpha * rnd_target
-        return image, target
-
-
 class FreesoundDataset(Dataset):
     def __init__(self, folds_data, folds,
                  transform=None,
