@@ -48,6 +48,7 @@ else:
     experiments_dir = save_data_dir / 'experiments'
 
 folds_data_pkl_dir = save_data_dir / 'folds_data'
+augment_folds_data_pkl_dir = save_data_dir / 'augment_folds_data'
 noisy_data_pkl_dir = save_data_dir / 'noisy_data'
 
 n_folds = 5
@@ -62,6 +63,8 @@ class audio:
     n_mels = 128
     n_fft = n_mels * 20
     min_seconds = 4
+    time_stretch_lst = [0.9, 0.95, 1.05, 1.1]
+    pitch_shift_lst = [-1, -0.5, 0.5, 1]
 
     @classmethod
     def get_config_dict(cls):

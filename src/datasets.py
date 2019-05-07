@@ -3,6 +3,7 @@ import torch
 import random
 import numpy as np
 import pandas as pd
+from functools import partial
 import multiprocessing as mp
 from torch.utils.data import Dataset
 
@@ -33,6 +34,45 @@ def get_folds_data():
         images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
 
     return images_lst, targets_lst, folds_lst
+
+
+def get_augment_folds_data_generator():
+    print("Start generate augment folds data")
+    print("Audio config", get_audio_config())
+    train_folds_df = pd.read_csv(config.train_folds_path)
+
+    audio_paths_lst = []
+    targets_lst = []
+    folds_lst = []
+    for i, row in train_folds_df.iterrows():
+        folds_lst.append(row.fold)
+        audio_paths_lst.append(row.file_path)
+        target = torch.zeros(len(config.classes))
+        for label in row.labels.split(','):
+            target[config.class2index[label]] = 1.
+        targets_lst.append(target)
+
+    with mp.Pool(N_WORKERS) as pool:
+        images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
+
+    yield images_lst, targets_lst, folds_lst
+    images_lst = []
+
+    for pitch_shift in config.audio.pitch_shift_lst:
+        pitch_shift_read = partial(read_as_melspectrogram, pitch_shift=pitch_shift)
+        with mp.Pool(N_WORKERS) as pool:
+            images_lst = pool.map(pitch_shift_read, audio_paths_lst)
+
+        yield images_lst, targets_lst, folds_lst
+        images_lst = []
+
+    for time_stretch in config.audio.time_stretch_lst:
+        time_stretch_read = partial(read_as_melspectrogram, time_stretch=time_stretch)
+        with mp.Pool(N_WORKERS) as pool:
+            images_lst = pool.map(time_stretch_read, audio_paths_lst)
+
+        yield images_lst, targets_lst, folds_lst
+        images_lst = []
 
 
 class FreesoundDataset(Dataset):

@@ -32,7 +32,6 @@ def read_audio(file_path):
         return np.zeros(min_samples, dtype=np.float32)
 
 
-
 def audio_to_melspectrogram(audio):
     spectrogram = librosa.feature.melspectrogram(audio,
                                                  sr=config.sampling_rate,
@@ -57,8 +56,15 @@ def show_melspectrogram(mels, title='Log-frequency power spectrogram'):
     plt.show()
 
 
-def read_as_melspectrogram(file_path, debug_display=False):
+def read_as_melspectrogram(file_path, time_stretch=1.0, pitch_shift=0.0,
+                           debug_display=False):
     x = read_audio(file_path)
+    if time_stretch != 1.0:
+        x = librosa.effects.time_stretch(x, time_stretch)
+
+    if pitch_shift != 0.0:
+        librosa.effects.pitch_shift(x, config.sampling_rate, n_steps=pitch_shift)
+
     mels = audio_to_melspectrogram(x)
     if debug_display:
         import IPython

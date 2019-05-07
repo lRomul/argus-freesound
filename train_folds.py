@@ -10,7 +10,7 @@ from src.datasets import FreesoundDataset, FreesoundNoisyDataset, CombinedDatase
 from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
-from src.utils import load_folds_data, load_noisy_data
+from src.utils import load_augment_folds_data, load_noisy_data
 from src import config
 
 
@@ -103,8 +103,8 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
+    folds_data = load_augment_folds_data()
     noisy_data = load_noisy_data()
-    folds_data = load_folds_data()
 
     for fold in config.folds:
         val_folds = [fold]
