@@ -64,15 +64,15 @@ class Compose:
     def __init__(self, transforms):
         self.transforms = transforms
 
-    def __call__(self, image, bbox=None):
-        if bbox is None:
+    def __call__(self, image, trg=None):
+        if trg is None:
             for t in self.transforms:
                 image = t(image)
             return image
         else:
             for t in self.transforms:
-                image, bbox = t(image, bbox)
-            return image, bbox
+                image, trg = t(image, trg)
+            return image, trg
 
 
 class UseWithProb:
@@ -80,29 +80,30 @@ class UseWithProb:
         self.transform = transform
         self.prob = prob
 
-    def __call__(self, image, bbox=None):
-        if bbox is None:
+    def __call__(self, image, trg=None):
+        if trg is None:
             if random.random() < self.prob:
                 image = self.transform(image)
             return image
         else:
             if random.random() < self.prob:
-                image, bbox = self.transform(image, bbox)
-            return image, bbox
+                image, trg = self.transform(image, trg)
+            return image, trg
 
 
 class OneOf:
-    def __init__(self, transforms):
+    def __init__(self, transforms, p=None):
         self.transforms = transforms
+        self.p = p
 
-    def __call__(self, image, bbox=None):
-        transform = np.random.choice(self.transforms)
-        if bbox is None:
+    def __call__(self, image, trg=None):
+        transform = np.random.choice(self.transforms, p=self.p)
+        if trg is None:
             image = transform(image)
             return image
         else:
-            image, bbox = transform(image, bbox)
-            return image, bbox
+            image, trg = transform(image, trg)
+            return image, trg
 
 
 class Flip:
@@ -184,22 +185,31 @@ class CenterCrop:
 
 
 class PadToSize:
-    def __init__(self, size):
+    def __init__(self, size, mode='constant'):
+        assert mode in ['constant', 'wrap']
         self.size = size
+        self.mode = mode
 
     def __call__(self, signal):
         if signal.shape[1] < self.size:
             padding = self.size - signal.shape[1]
             offset = padding // 2
             pad_width = ((0, 0), (offset, padding - offset))
-            signal = np.pad(signal, pad_width, 'constant')
+            if self.mode == 'constant':
+                signal = np.pad(signal, pad_width,
+                                'constant', constant_values=signal.min())
+            else:
+                signal = np.pad(signal, pad_width, 'wrap')
         return signal
 
 
-def get_transforms(train, size):
+def get_transforms(train, size, wrap_pad_prob=0.5):
     if train:
         transforms = Compose([
-            PadToSize(size),
+            OneOf([
+                PadToSize(size, mode='wrap'),
+                PadToSize(size, mode='constant'),
+            ], p=[wrap_pad_prob, 1 - wrap_pad_prob]),
             RandomCrop(size),
             # UseWithProb(HorizontalFlip(), 0.25),
             # UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.1),
