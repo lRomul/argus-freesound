@@ -36,9 +36,11 @@ def get_folds_data():
     return images_lst, targets_lst, folds_lst
 
 
-def get_augment_folds_data_generator():
+def get_augment_folds_data_generator(time_stretch_lst, pitch_shift_lst):
     print("Start generate augment folds data")
     print("Audio config", get_audio_config())
+    print("time_stretch_lst:", time_stretch_lst)
+    print("pitch_shift_lst:", pitch_shift_lst)
     train_folds_df = pd.read_csv(config.train_folds_path)
 
     audio_paths_lst = []
@@ -58,7 +60,7 @@ def get_augment_folds_data_generator():
     yield images_lst, targets_lst, folds_lst
     images_lst = []
 
-    for pitch_shift in config.audio.pitch_shift_lst:
+    for pitch_shift in pitch_shift_lst:
         pitch_shift_read = partial(read_as_melspectrogram, pitch_shift=pitch_shift)
         with mp.Pool(N_WORKERS) as pool:
             images_lst = pool.map(pitch_shift_read, audio_paths_lst)
@@ -66,7 +68,7 @@ def get_augment_folds_data_generator():
         yield images_lst, targets_lst, folds_lst
         images_lst = []
 
-    for time_stretch in config.audio.time_stretch_lst:
+    for time_stretch in time_stretch_lst:
         time_stretch_read = partial(read_as_melspectrogram, time_stretch=time_stretch)
         with mp.Pool(N_WORKERS) as pool:
             images_lst = pool.map(time_stretch_read, audio_paths_lst)
@@ -188,12 +190,10 @@ class FreesoundNoisyDataset(Dataset):
         return image, target, noisy
 
 
-class CombinedDataset(Dataset):
-    def __init__(self, noisy_dataset, curated_dataset,
-                 noisy_prob=0.5, size=4096):
-        self.noisy_dataset = noisy_dataset
-        self.curated_dataset = curated_dataset
-        self.noisy_prob = noisy_prob
+class RandomDataset(Dataset):
+    def __init__(self, datasets, p=None, size=4096):
+        self.datasets = datasets
+        self.p = p
         self.size = size
 
     def __len__(self):
@@ -204,10 +204,6 @@ class CombinedDataset(Dataset):
         random.seed(seed)
         np.random.seed(seed % (2**31))
 
-        if random.random() < self.noisy_prob:
-            idx = random.randint(0, len(self.noisy_dataset) - 1)
-            return self.noisy_dataset[idx]
-
-        else:
-            idx = random.randint(0, len(self.curated_dataset) - 1)
-            return self.curated_dataset[idx]
+        dataset = np.random.choice(self.datasets, p=self.p)
+        idx = random.randint(0, len(dataset) - 1)
+        return dataset[idx]

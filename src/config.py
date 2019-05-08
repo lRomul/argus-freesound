@@ -63,8 +63,6 @@ class audio:
     n_mels = 128
     n_fft = n_mels * 20
     min_seconds = 4
-    time_stretch_lst = [0.9, 0.95, 1.05, 1.1]
-    pitch_shift_lst = [-1, -0.5, 0.5, 1]
 
     @classmethod
     def get_config_dict(cls):
@@ -76,8 +74,9 @@ class audio:
         return config_dict
 
     @classmethod
-    def get_hash(cls):
+    def get_hash(cls, **kwargs):
         config_dict = cls.get_config_dict()
+        config_dict = {**config_dict, **kwargs}
         hash_str = json.dumps(config_dict,
                               sort_keys=True,
                               ensure_ascii=False,

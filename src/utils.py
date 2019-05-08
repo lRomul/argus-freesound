@@ -56,8 +56,10 @@ def load_noisy_data():
     return images_lst, targets_lst
 
 
-def load_augment_folds_data():
-    pkl_name_glob = f'{config.audio.get_hash()}_*.pkl'
+def load_augment_folds_data(time_stretch_lst, pitch_shift_lst):
+    config_hash = config.audio.get_hash(time_stretch_lst=time_stretch_lst,
+                                        pitch_shift_lst=pitch_shift_lst)
+    pkl_name_glob = f'{config_hash}_*.pkl'
     pkl_paths = sorted(config.augment_folds_data_pkl_dir.glob(pkl_name_glob))
 
     images_lst, targets_lst, folds_lst = [], [], []
@@ -72,7 +74,8 @@ def load_augment_folds_data():
         if not config.augment_folds_data_pkl_dir.exists():
             config.augment_folds_data_pkl_dir.mkdir(parents=True, exist_ok=True)
 
-        for i, data_batch in enumerate(get_augment_folds_data_generator()):
+        generator = get_augment_folds_data_generator(time_stretch_lst, pitch_shift_lst)
+        for i, data_batch in enumerate(generator):
             pkl_name = f'{config.audio.get_hash()}_{i:02}.pkl'
             augment_data_pkl_path = config.augment_folds_data_pkl_dir / pkl_name
             pickle_save(data_batch, augment_data_pkl_path)

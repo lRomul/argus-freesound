@@ -6,11 +6,11 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, FreesoundNoisyDataset, CombinedDataset
+from src.datasets import FreesoundDataset, FreesoundNoisyDataset, RandomDataset
 from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
-from src.utils import load_augment_folds_data, load_noisy_data
+from src.utils import load_augment_folds_data, load_noisy_data, load_folds_data
 from src import config
 
 
@@ -22,6 +22,9 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
+AUGMENT_PROB = 0.33
+TIME_STRETCH_LST = [0.9, 0.95, 1.05, 1.1]
+PITCH_SHIFT_LST = [-1, -0.5, 0.5, 1]
 MIXER_PROB = 0.66
 if config.kernel:
     NUM_WORKERS = 2
@@ -49,7 +52,8 @@ PARAMS = {
 }
 
 
-def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
+def train_fold(save_dir, train_folds, val_folds,
+               folds_data, augment_folds_data, noisy_data):
     train_transfrom = get_transforms(True, CROP_SIZE)
 
     mixer = RandomMixer([
@@ -61,10 +65,14 @@ def train_fold(save_dir, train_folds, val_folds, folds_data, noisy_data):
     curated_dataset = FreesoundDataset(folds_data, train_folds,
                                        transform=train_transfrom,
                                        mixer=mixer)
+    augment_curated_dataset = FreesoundDataset(augment_folds_data, train_folds,
+                                               transform=train_transfrom,
+                                               mixer=mixer)
     noisy_dataset = FreesoundNoisyDataset(noisy_data,
                                           transform=train_transfrom)
-    train_dataset = CombinedDataset(noisy_dataset, curated_dataset,
-                                    noisy_prob=NOISY_PROB, size=DATASET_SIZE)
+    train_dataset = RandomDataset([noisy_dataset, augment_curated_dataset, curated_dataset],
+                                  p=[NOISY_PROB, AUGMENT_PROB, 1 - (NOISY_PROB + AUGMENT_PROB)],
+                                  size=DATASET_SIZE)
 
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
@@ -103,7 +111,8 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
-    folds_data = load_augment_folds_data()
+    folds_data = load_folds_data()
+    augment_folds_data = load_augment_folds_data(TIME_STRETCH_LST, PITCH_SHIFT_LST)
     noisy_data = load_noisy_data()
 
     for fold in config.folds:
@@ -112,4 +121,5 @@ if __name__ == "__main__":
         save_fold_dir = SAVE_DIR / f'fold_{fold}'
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
-        train_fold(save_fold_dir, train_folds, val_folds, folds_data, noisy_data)
+        train_fold(save_fold_dir, train_folds, val_folds,
+                   folds_data, augment_folds_data, noisy_data)
