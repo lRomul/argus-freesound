@@ -183,9 +183,23 @@ class CenterCrop:
             return signal
 
 
+class PadToSize:
+    def __init__(self, size):
+        self.size = size
+
+    def __call__(self, signal):
+        if signal.shape[1] < self.size:
+            padding = self.size - signal.shape[1]
+            offset = padding // 2
+            pad_width = ((0, 0), (offset, padding - offset))
+            signal = np.pad(signal, pad_width, 'constant')
+        return signal
+
+
 def get_transforms(train, size):
     if train:
         transforms = Compose([
+            PadToSize(size),
             RandomCrop(size),
             # UseWithProb(HorizontalFlip(), 0.25),
             # UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.1),
@@ -197,6 +211,7 @@ def get_transforms(train, size):
         ])
     else:
         transforms = Compose([
+            PadToSize(size),
             CenterCrop(size),
             ImageToTensor()
         ])
