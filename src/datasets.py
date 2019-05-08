@@ -204,6 +204,8 @@ class RandomDataset(Dataset):
         random.seed(seed)
         np.random.seed(seed % (2**31))
 
-        dataset = np.random.choice(self.datasets, p=self.p)
+        dataset_idx = np.random.choice(
+            range(len(self.datasets)), p=self.p)
+        dataset = self.datasets[dataset_idx]
         idx = random.randint(0, len(dataset) - 1)
         return dataset[idx]

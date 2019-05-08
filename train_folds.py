@@ -23,9 +23,10 @@ CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
 AUGMENT_PROB = 0.33
-TIME_STRETCH_LST = [0.9, 0.95, 1.05, 1.1]
-PITCH_SHIFT_LST = [-1, -0.5, 0.5, 1]
+TIME_STRETCH_LST = [0.8, 0.9, 1.1, 1.2]
+PITCH_SHIFT_LST = [-2, -1, 1, 2]
 MIXER_PROB = 0.66
+WRAP_PAD_PROB = 0.5
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -54,7 +55,9 @@ PARAMS = {
 
 def train_fold(save_dir, train_folds, val_folds,
                folds_data, augment_folds_data, noisy_data):
-    train_transfrom = get_transforms(True, CROP_SIZE)
+    train_transfrom = get_transforms(train=True,
+                                     size=CROP_SIZE,
+                                     wrap_pad_prob=WRAP_PAD_PROB)
 
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),

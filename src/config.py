@@ -62,7 +62,7 @@ class audio:
     fmax = sampling_rate // 2
     n_mels = 128
     n_fft = n_mels * 20
-    min_seconds = 4
+    min_seconds = 0.5
 
     @classmethod
     def get_config_dict(cls):

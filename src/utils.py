@@ -76,7 +76,7 @@ def load_augment_folds_data(time_stretch_lst, pitch_shift_lst):
 
         generator = get_augment_folds_data_generator(time_stretch_lst, pitch_shift_lst)
         for i, data_batch in enumerate(generator):
-            pkl_name = f'{config.audio.get_hash()}_{i:02}.pkl'
+            pkl_name = f'{config_hash}_{i:02}.pkl'
             augment_data_pkl_path = config.augment_folds_data_pkl_dir / pkl_name
             pickle_save(data_batch, augment_data_pkl_path)
 
