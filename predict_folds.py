@@ -1,4 +1,5 @@
 import re
+import json
 import argparse
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ from pathlib import Path
 from src.predictor import Predictor
 from src.audio import read_as_melspectrogram
 from src.transforms import get_transforms
+from src.metrics import LwlrapBase
 from src import config
 
 
@@ -24,7 +26,27 @@ BATCH_SIZE = 16
 
 
 def pred_val_fold(predictor, fold):
-    pass
+    train_folds_df = pd.read_csv(config.train_folds_path)
+    train_folds_df = train_folds_df[train_folds_df.fold == fold]
+
+    fname_lst = []
+    pred_lst = []
+    for fname, row in train_folds_df.iterrows():
+        image = read_as_melspectrogram(row.file_path)
+        pred = predictor.predict(image)
+
+        pred_lst.append(pred)
+        fname_lst.append(row.fname)
+
+    preds = np.stack(pred_lst, axis=0)
+    probs_df = pd.DataFrame(data=preds,
+                            index=fname_lst,
+                            columns=config.classes)
+    probs_df.index.name = 'fname'
+
+    fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'val'
+    fold_prediction_dir.mkdir(parents=True, exist_ok=True)
+    probs_df.to_csv(fold_prediction_dir / 'probs.csv')
 
 
 def pred_test_fold(predictor, fold):
@@ -79,6 +101,36 @@ def blend_test_predictions():
         blend_df.to_csv(PREDICTION_DIR / 'probs.csv')
 
 
+def calc_lwlrap_on_val():
+    probs_df_lst = []
+    for fold in config.folds:
+        fold_probs_path = PREDICTION_DIR / f'fold_{fold}' / 'val' / 'probs.csv'
+        probs_df = pd.read_csv(fold_probs_path)
+        probs_df.set_index('fname', inplace=True)
+        probs_df_lst.append(probs_df)
+
+    probs_df = pd.concat(probs_df_lst, axis=0)
+    train_curated_df = pd.read_csv(config.train_curated_csv_path)
+
+    lwlrap = LwlrapBase(config.classes)
+    for i, row in train_curated_df.iterrows():
+        target = np.zeros(len(config.classes))
+        for label in row.labels.split(','):
+            target[config.class2index[label]] = 1.
+
+        pred = probs_df.loc[row.fname].values
+        lwlrap.accumulate(target[np.newaxis], pred[np.newaxis])
+
+    result = {
+        'overall_lwlrap': lwlrap.overall_lwlrap(),
+        'per_class_lwlrap': {cls: lwl for cls, lwl in zip(config.classes,
+                                                          lwlrap.per_class_lwlrap())}
+    }
+    print(result)
+    with open(PREDICTION_DIR / 'val_lwlrap.json', 'w') as file:
+        json.dump(result, file)
+
+
 if __name__ == "__main__":
     transforms = get_transforms(False, CROP_SIZE)
 
@@ -102,3 +154,7 @@ if __name__ == "__main__":
 
     print("Blend folds predictions")
     blend_test_predictions()
+
+    if not config.kernel:
+        print("Calculate lwlrap metric on cv")
+        calc_lwlrap_on_val()
