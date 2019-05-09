@@ -33,7 +33,7 @@ def clone_package(git_url):
     os.system(f'rm -rf {name}/.git')
 
 
-def build_script(ignore_list, packages):
+def build_script(ignore_list, packages, template_name='kernel_template.py'):
     to_encode = []
 
     for path in Path('.').glob('**/*.py'):
@@ -51,12 +51,15 @@ def build_script(ignore_list, packages):
     print("Encoded python files:")
     for path in file_data:
         print(path)
-    template = Path('kernel_template.py').read_text('utf8')
-    Path('kernel/script.py').write_text(
+    template = Path(template_name).read_text('utf8')
+    (Path('kernel') / template_name).write_text(
         template.replace('{file_data}', str(file_data)),
         encoding='utf8')
 
 
 if __name__ == '__main__':
     os.system('rm -rf kernel && mkdir kernel')
-    build_script(IGNORE_LIST, PACKAGES)
+    build_script(IGNORE_LIST, PACKAGES,
+                 template_name='kernel_template.py')
+    build_script(IGNORE_LIST, PACKAGES,
+                 template_name='blend_kernel_template.py')
