@@ -22,9 +22,6 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
-AUGMENT_PROB = 0.33
-TIME_STRETCH_LST = [0.8, 0.9, 1.1, 1.2]
-PITCH_SHIFT_LST = [-2, -1, 1, 2]
 MIXER_PROB = 0.66
 WRAP_PAD_PROB = 0.5
 if config.kernel:
@@ -54,7 +51,7 @@ PARAMS = {
 
 
 def train_fold(save_dir, train_folds, val_folds,
-               folds_data, augment_folds_data, noisy_data):
+               folds_data, noisy_data):
     train_transfrom = get_transforms(train=True,
                                      size=CROP_SIZE,
                                      wrap_pad_prob=WRAP_PAD_PROB)
@@ -68,13 +65,10 @@ def train_fold(save_dir, train_folds, val_folds,
     curated_dataset = FreesoundDataset(folds_data, train_folds,
                                        transform=train_transfrom,
                                        mixer=mixer)
-    augment_curated_dataset = FreesoundDataset(augment_folds_data, train_folds,
-                                               transform=train_transfrom,
-                                               mixer=mixer)
     noisy_dataset = FreesoundNoisyDataset(noisy_data,
                                           transform=train_transfrom)
-    train_dataset = RandomDataset([noisy_dataset, augment_curated_dataset, curated_dataset],
-                                  p=[NOISY_PROB, AUGMENT_PROB, 1 - (NOISY_PROB + AUGMENT_PROB)],
+    train_dataset = RandomDataset([noisy_dataset, curated_dataset],
+                                  p=[NOISY_PROB, 1 - NOISY_PROB],
                                   size=DATASET_SIZE)
 
     val_dataset = FreesoundDataset(folds_data, val_folds,
@@ -115,7 +109,6 @@ if __name__ == "__main__":
         json.dump(PARAMS, outfile)
 
     folds_data = load_folds_data()
-    augment_folds_data = load_augment_folds_data(TIME_STRETCH_LST, PITCH_SHIFT_LST)
     noisy_data = load_noisy_data()
 
     for fold in config.folds:
@@ -125,4 +118,4 @@ if __name__ == "__main__":
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
         train_fold(save_fold_dir, train_folds, val_folds,
-                   folds_data, augment_folds_data, noisy_data)
+                   folds_data, noisy_data)
