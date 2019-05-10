@@ -66,7 +66,8 @@ def train_fold(save_dir, train_folds, val_folds,
                                        transform=train_transfrom,
                                        mixer=mixer)
     noisy_dataset = FreesoundNoisyDataset(noisy_data,
-                                          transform=train_transfrom)
+                                          transform=train_transfrom,
+                                          mixer=mixer)
     train_dataset = RandomDataset([noisy_dataset, curated_dataset],
                                   p=[NOISY_PROB, 1 - NOISY_PROB],
                                   size=DATASET_SIZE)
