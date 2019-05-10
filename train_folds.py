@@ -22,7 +22,7 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
-MIXER_PROB = 0.66
+MIXER_PROB = 1.0
 WRAP_PAD_PROB = 0.5
 if config.kernel:
     NUM_WORKERS = 2
@@ -59,7 +59,7 @@ def train_fold(save_dir, train_folds, val_folds,
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
         AddMixer(alpha_dist='uniform')
-    ], p=[0.6, 0.4])
+    ], p=[0.5, 0.5])
     mixer = UseMixerWithProb(mixer, prob=MIXER_PROB)
 
     curated_dataset = FreesoundDataset(folds_data, train_folds,
