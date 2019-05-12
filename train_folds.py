@@ -10,7 +10,7 @@ from src.datasets import FreesoundDataset, FreesoundNoisyDataset, RandomDataset
 from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
-from src.utils import load_augment_folds_data, load_noisy_data, load_folds_data
+from src.utils import load_noisy_data, load_folds_data
 from src import config
 
 

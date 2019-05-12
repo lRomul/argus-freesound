@@ -1,13 +1,11 @@
-import re
 import numpy as np
 import pandas as pd
-from scipy.stats.mstats import gmean
-from pathlib import Path
 import multiprocessing as mp
 
 from src.predictor import Predictor
 from src.audio import read_as_melspectrogram
 from src.transforms import get_transforms
+from src.utils import get_best_model_path, gmean_preds_blend
 from src import config
 
 
@@ -21,28 +19,6 @@ DEVICE = 'cuda'
 CROP_SIZE = 256
 BATCH_SIZE = 16
 N_WORKERS = mp.cpu_count()
-
-
-def gmean_preds_blend(probs_df_lst):
-    blend_values = np.stack([df.values for df in probs_df_lst], axis=0)
-    blend_values = gmean(blend_values, axis=0)
-
-    blend_df = probs_df_lst[0]
-    blend_df.values[:] = blend_values
-
-    return blend_df
-
-
-def get_best_model_path(dir_path: Path):
-    model_scores = []
-    for model_path in dir_path.glob('*.pth'):
-        score = re.search(r'-(\d+(?:\.\d+)?).pth', str(model_path))
-        if score is not None:
-            score = score.group(0)[1:-4]
-            model_scores.append((model_path, score))
-    model_score = sorted(model_scores, key=lambda x: x[1])
-    best_model_path = model_score[-1][0]
-    return best_model_path
 
 
 def get_test_data():

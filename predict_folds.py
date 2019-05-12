@@ -1,15 +1,14 @@
-import re
 import json
 import argparse
 import numpy as np
 import pandas as pd
 from scipy.stats.mstats import gmean
-from pathlib import Path
 
 from src.predictor import Predictor
 from src.audio import read_as_melspectrogram
 from src.transforms import get_transforms
 from src.metrics import LwlrapBase
+from src.utils import get_best_model_path, gmean_preds_blend
 from src import config
 
 
@@ -69,18 +68,6 @@ def pred_test_fold(predictor, fold):
     subm_df.to_csv(fold_prediction_dir / 'probs.csv')
 
 
-def get_best_model_path(dir_path: Path):
-    model_scores = []
-    for model_path in dir_path.glob('*.pth'):
-        score = re.search(r'-(\d+(?:\.\d+)?).pth', str(model_path))
-        if score is not None:
-            score = score.group(0)[1:-4]
-            model_scores.append((model_path, score))
-    model_score = sorted(model_scores, key=lambda x: x[1])
-    best_model_path = model_score[-1][0]
-    return best_model_path
-
-
 def blend_test_predictions():
     probs_df_lst = []
     for fold in config.folds:
@@ -89,11 +76,7 @@ def blend_test_predictions():
         probs_df.set_index('fname', inplace=True)
         probs_df_lst.append(probs_df)
 
-    blend_values = np.stack([df.values for df in probs_df_lst], axis=0)
-    blend_values = gmean(blend_values, axis=0)
-
-    blend_df = probs_df_lst[0]
-    blend_df.values[:] = blend_values
+    blend_df = gmean_preds_blend(probs_df_lst)
 
     if config.kernel:
         blend_df.to_csv('submission.csv')
