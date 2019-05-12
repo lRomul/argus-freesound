@@ -69,7 +69,7 @@ class NoisyCuratedLoss(nn.Module):
             noisy_loss = self.noisy_loss(noisy_output, noisy_target)
             noisy_loss = noisy_loss * (noisy_len / batch_size)
         else:
-            noisy_loss = 0
+            noisy_loss = torch.tensor(0.)
 
         curated_len = curated_indexes.shape[0]
         if curated_len > 0:
@@ -78,11 +78,11 @@ class NoisyCuratedLoss(nn.Module):
             curated_loss = self.curated_loss(curated_output, curated_target)
             curated_loss = curated_loss * (curated_len / batch_size)
         else:
-            curated_loss = 0
+            curated_loss = torch.tensor(0.)
 
-        loss = noisy_loss * self.noisy_weight
-        loss += curated_loss * self.curated_weight
-        return loss
+        noisy_loss = noisy_loss * self.noisy_weight
+        curated_loss = curated_loss * self.curated_weight
+        return noisy_loss, curated_loss
 
 
 class OnlyNoisyLqLoss(nn.Module):
@@ -132,3 +132,25 @@ class BCEMaxOutlierLoss(nn.Module):
 
         loss = loss[outlier_idx].mean()
         return loss
+
+
+class MSEWithLogitsLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, output, target):
+        output = torch.sigmoid(output)
+        return self.mse(output, target)
+
+
+class MixMatchLoss(nn.Module):
+    def __init__(self, lambda_u=75):
+        super().__init__()
+        mse = MSEWithLogitsLoss()
+        bce = nn.BCEWithLogitsLoss()
+        self.loss = NoisyCuratedLoss(mse, bce,
+                                     lambda_u, 1.0)
+
+    def forward(self, output, target, noisy):
+        return self.loss(output, target, noisy)

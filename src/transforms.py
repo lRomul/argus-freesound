@@ -156,8 +156,8 @@ class RandomGaussianBlur:
 
 class ImageToTensor:
     def __call__(self, image):
-        image = np.stack([image, image, image], axis=0)
         image = image.astype(np.float32) / 100
+        image = image[np.newaxis]
         image = torch.from_numpy(image)
         return image
 

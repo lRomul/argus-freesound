@@ -42,7 +42,7 @@ class SigmoidConcatMixer:
         x = np.arange(-x_radius, x_radius, step=step)
         y = torch.sigmoid(torch.from_numpy(x)).numpy()
         mix_mask = np.tile(y, (size[0], 1))
-        return torch.from_numpy(mix_mask.astype(np.float32))
+        return mix_mask
 
     def __call__(self, dataset, image, target):
         rnd_image, rnd_target = get_random_sample(dataset)

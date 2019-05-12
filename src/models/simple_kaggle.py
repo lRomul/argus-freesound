@@ -38,11 +38,11 @@ class ConvBlock(nn.Module):
 
 
 class SimpleKaggle(nn.Module):
-    def __init__(self, num_classes, base_size=64, dropout=0.2):
+    def __init__(self, num_classes, in_channels=1, base_size=64, dropout=0.2):
         super().__init__()
 
         self.conv = nn.Sequential(
-            ConvBlock(in_channels=3, out_channels=base_size),
+            ConvBlock(in_channels=in_channels, out_channels=base_size),
             ConvBlock(in_channels=base_size, out_channels=base_size*2),
             ConvBlock(in_channels=base_size*2, out_channels=base_size*4),
             ConvBlock(in_channels=base_size*4, out_channels=base_size*8),

@@ -6,23 +6,22 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, FreesoundNoisyDataset, RandomDataset
-from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
+from src.datasets import FreesoundDataset, FreesoundNoisyDataset
 from src.transforms import get_transforms
-from src.argus_models import FreesoundModel
-from src.utils import load_augment_folds_data, load_noisy_data, load_folds_data
+from src.mixmatch_argus_models import MixMatchModel
+from src.mixmatch import EmptyDataset, MixMatchCollate
+from src.mixers import SigmoidConcatMixer, UseMixerWithProb
+from src.utils import load_noisy_data, load_folds_data
 from src import config
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
-BATCH_SIZE = 128
+BATCH_SIZE = 48
 CROP_SIZE = 256
-DATASET_SIZE = 128 * 256
-NOISY_PROB = 0.33
-MIXER_PROB = 0.66
+DATASET_SIZE = 128 * 128
+K = 2
 WRAP_PAD_PROB = 0.5
 if config.kernel:
     NUM_WORKERS = 2
@@ -32,16 +31,21 @@ SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
+        'in_channels': 1,
         'base_size': 64,
         'dropout': 0.111
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
         'noisy_weight': 0.5,
-        'curated_weight': 0.5
+        'curated_weight': 1.0
     }),
     'optimizer': ('Adam', {'lr': 0.0006}),
     'device': 'cuda',
+    'mixmatch': {
+        'T': 0.5,
+        'alpha': 0.75
+    },
     'amp': {
         'opt_level': 'O2',
         'keep_batchnorm_fp32': True,
@@ -55,37 +59,30 @@ def train_fold(save_dir, train_folds, val_folds,
     train_transfrom = get_transforms(train=True,
                                      size=CROP_SIZE,
                                      wrap_pad_prob=WRAP_PAD_PROB)
-
-    mixer = RandomMixer([
+    mixer = UseMixerWithProb(
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
-        AddMixer(alpha_dist='uniform')
-    ], p=[0.6, 0.4])
-    mixer = UseMixerWithProb(mixer, prob=MIXER_PROB)
+        prob=0.5
+    )
+    curated_dataset = FreesoundDataset(folds_data, train_folds, mixer=mixer)
+    noisy_dataset = FreesoundNoisyDataset(noisy_data, mixer=mixer)
+    collate = MixMatchCollate(curated_dataset, noisy_dataset,
+                              K, train_transfrom)
 
-    curated_dataset = FreesoundDataset(folds_data, train_folds,
-                                       transform=train_transfrom,
-                                       mixer=mixer)
-    noisy_dataset = FreesoundNoisyDataset(noisy_data,
-                                          transform=train_transfrom,
-                                          mixer=mixer)
-    train_dataset = RandomDataset([noisy_dataset, curated_dataset],
-                                  p=[NOISY_PROB, 1 - NOISY_PROB],
-                                  size=DATASET_SIZE)
-
+    train_dataset = EmptyDataset(size=DATASET_SIZE)
     val_dataset = FreesoundDataset(folds_data, val_folds,
                                    get_transforms(False, CROP_SIZE))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
-                              shuffle=True, drop_last=True,
-                              num_workers=NUM_WORKERS)
+                              shuffle=True, collate_fn=collate,
+                              num_workers=NUM_WORKERS, drop_last=True)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE * 2,
                             shuffle=False, num_workers=NUM_WORKERS)
 
-    model = FreesoundModel(PARAMS)
+    model = MixMatchModel(PARAMS)
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=6, factor=0.6, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=18),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=9, factor=0.6, min_lr=1e-8),
+        EarlyStopping(monitor='val_lwlrap', patience=27),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
@@ -93,7 +90,8 @@ def train_fold(save_dir, train_folds, val_folds,
               val_loader=val_loader,
               max_epochs=700,
               callbacks=callbacks,
-              metrics=['multi_accuracy', 'lwlrap'])
+              metrics=['multi_accuracy', 'lwlrap', 'noisy_curated_loss'],
+              metrics_on_train=True)
 
 
 if __name__ == "__main__":

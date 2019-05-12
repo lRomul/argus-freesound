@@ -2,6 +2,7 @@ import torch
 import numpy as np
 
 from argus.metrics.metric import Metric
+from argus.utils import AverageMeter
 
 from src import config
 
@@ -141,3 +142,24 @@ class Lwlrap(Metric):
 
     def compute(self):
         return self.lwlrap.overall_lwlrap()
+
+
+class NoisyCuratedLoss(Metric):
+    name = 'noisy_curated_loss'
+
+    def __init__(self):
+        self.noisy_avg_meter = AverageMeter()
+        self.curated_avg_meter = AverageMeter()
+        super().__init__()
+
+    def reset(self):
+        self.noisy_avg_meter.reset()
+        self.curated_avg_meter.reset()
+
+    def update(self, step_output: dict):
+        self.noisy_avg_meter.update(step_output['noisy_loss'])
+        self.curated_avg_meter.update(step_output['curated_loss'])
+
+    def epoch_complete(self, state, name_prefix=''):
+        state.metrics[name_prefix + 'noisy_loss'] = self.noisy_avg_meter.average
+        state.metrics[name_prefix + 'curated_loss'] = self.curated_avg_meter.average
