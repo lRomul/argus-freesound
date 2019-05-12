@@ -14,6 +14,20 @@ from src import config
 N_WORKERS = mp.cpu_count()
 
 
+def get_test_data():
+    print("Start load test data")
+    fname_lst = []
+    wav_path_lst = []
+    for wav_path in config.test_dir.glob('*.wav'):
+        wav_path_lst.append(wav_path)
+        fname_lst.append(wav_path.name)
+
+    with mp.Pool(N_WORKERS) as pool:
+        images_lst = pool.map(read_as_melspectrogram, wav_path_lst)
+
+    return fname_lst, images_lst
+
+
 def get_folds_data():
     print("Start generate folds data")
     print("Audio config", get_audio_config())

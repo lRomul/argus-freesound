@@ -2,13 +2,13 @@ import json
 import argparse
 import numpy as np
 import pandas as pd
-from scipy.stats.mstats import gmean
 
 from src.predictor import Predictor
 from src.audio import read_as_melspectrogram
 from src.transforms import get_transforms
 from src.metrics import LwlrapBase
 from src.utils import get_best_model_path, gmean_preds_blend
+from src.datasets import get_test_data
 from src import config
 
 
@@ -48,14 +48,12 @@ def pred_val_fold(predictor, fold):
     probs_df.to_csv(fold_prediction_dir / 'probs.csv')
 
 
-def pred_test_fold(predictor, fold):
-    fname_lst = []
+def pred_test_fold(predictor, fold, test_data):
+    fname_lst, images_lst = test_data
     pred_lst = []
-    for wav_path in config.test_dir.glob('*.wav'):
-        image = read_as_melspectrogram(wav_path)
+    for image in images_lst:
         pred = predictor.predict(image)
         pred_lst.append(pred)
-        fname_lst.append(wav_path.name)
 
     preds = np.stack(pred_lst, axis=0)
     subm_df = pd.DataFrame(data=preds,
@@ -116,6 +114,7 @@ def calc_lwlrap_on_val():
 
 if __name__ == "__main__":
     transforms = get_transforms(False, CROP_SIZE)
+    test_data = get_test_data()
 
     for fold in config.folds:
         print("Predict fold", fold)
@@ -133,7 +132,7 @@ if __name__ == "__main__":
             pred_val_fold(predictor, fold)
 
         print("Test predict")
-        pred_test_fold(predictor, fold)
+        pred_test_fold(predictor, fold, test_data)
 
     print("Blend folds predictions")
     blend_test_predictions()
