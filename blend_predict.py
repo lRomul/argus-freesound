@@ -4,13 +4,14 @@ import pandas as pd
 from src.predictor import Predictor
 from src.transforms import get_transforms
 from src.utils import get_best_model_path, gmean_preds_blend
+from src.datasets import get_test_data
 from src import config
 
 
 EXPERIMENTS = [
     'lsoft_008',
-    'lsoft_012',
-    'augment_audio_002'
+    'augment_audio_002',
+    'noisy_mixup_001'
 ]
 
 DEVICE = 'cuda'
@@ -58,6 +59,7 @@ def experiment_pred(experiment_dir, test_data):
 
 
 if __name__ == "__main__":
+    print("Experiments", EXPERIMENTS)
     test_data = get_test_data()
 
     exp_pred_df_lst = []
