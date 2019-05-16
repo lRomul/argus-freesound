@@ -30,10 +30,12 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SimpleKaggle', {
+    'nn_module': ('SimpleAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.111
+        'dropout': 0.111,
+        'ratio': 16,
+        'kernel_size': 7
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
