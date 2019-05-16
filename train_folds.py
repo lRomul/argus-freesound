@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
-BATCH_SIZE = 128
+BATCH_SIZE = 48
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
@@ -30,17 +30,16 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SimpleKaggle', {
+    'nn_module': ('se_resnext50_32x4d', {
         'num_classes': len(config.classes),
-        'base_size': 64,
-        'dropout': 0.111
+        'dropout_p': None
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0006}),
+    'optimizer': ('Adam', {'lr': 0.0003}),
     'device': 'cuda',
     'amp': {
         'opt_level': 'O2',
@@ -84,8 +83,8 @@ def train_fold(save_dir, train_folds, val_folds,
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=6, factor=0.6, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=18),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=5, factor=0.6, min_lr=1e-8),
+        EarlyStopping(monitor='val_lwlrap', patience=15),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 

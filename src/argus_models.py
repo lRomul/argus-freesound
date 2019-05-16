@@ -5,6 +5,7 @@ from argus.utils import deep_detach, deep_to
 
 from src.models import resnet
 from src.models import senet
+from src.models import mobilenetv3
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
 from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss, BCEMaxOutlierLoss
@@ -17,7 +18,9 @@ class FreesoundModel(Model):
         'resnet34': resnet.resnet34,
         'FeatureExtractor': FeatureExtractor,
         'SimpleKaggle': SimpleKaggle,
-        'se_resnext50_32x4d': senet.se_resnext50_32x4d
+        'se_resnext50_32x4d': senet.se_resnext50_32x4d,
+        'mobilenetv3_small': mobilenetv3.mobilenetv3_small,
+        'mobilenetv3_large': mobilenetv3.mobilenetv3_large
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
