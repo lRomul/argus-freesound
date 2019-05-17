@@ -22,7 +22,7 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
-MIXER_PROB = 0.66
+MIXER_PROB = 0.88
 WRAP_PAD_PROB = 0.5
 if config.kernel:
     NUM_WORKERS = 2
@@ -30,12 +30,10 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SimpleAttention', {
+    'nn_module': ('SimpleKaggle', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.111,
-        'ratio': 16,
-        'kernel_size': 7
+        'dropout': 0.111
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.5,
@@ -60,8 +58,8 @@ def train_fold(save_dir, train_folds, val_folds,
 
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
-        AddMixer(alpha_dist='uniform')
-    ], p=[0.6, 0.4])
+        AddMixer(alpha_dist='beta')
+    ], p=[0.3, 0.7])
     mixer = UseMixerWithProb(mixer, prob=MIXER_PROB)
 
     curated_dataset = FreesoundDataset(folds_data, train_folds,
