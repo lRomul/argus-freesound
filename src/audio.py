@@ -44,8 +44,8 @@ def audio_to_melspectrogram(audio):
     spectrogram = librosa.power_to_db(spectrogram)
     # delta = librosa.feature.delta(spectrogram, order=1)
     # accelerate = librosa.feature.delta(spectrogram, order=2)
-    spectrogram -= spectrogram.min()
-    spectrogram /= 80.0
+    # spectrogram -= spectrogram.min()
+    # spectrogram /= 80.0
     return spectrogram
 
 
@@ -62,7 +62,7 @@ def audio_to_pcen(audio):
     pcen = librosa.pcen(spectrogram,
                         sr=config.sampling_rate,
                         hop_length=config.hop_length)
-    pcen /= 4.0
+    # pcen /= 4.0
     return pcen
 
 
@@ -109,7 +109,7 @@ def read_as_melspectrogram(file_path, time_stretch=1.0, pitch_shift=0.0,
         show_melspectrogram(tempogram)
 
     result = np.stack([melspectrogram, pcen, tempogram], axis=2)
-    return result.astype(np.float32)
+    return result.astype(np.float32) / 100.0
 
 
 if __name__ == "__main__":
