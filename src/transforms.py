@@ -12,7 +12,7 @@ def image_crop(image, bbox):
 
 
 def gauss_noise(image, sigma_sq):
-    h, w = image.shape
+    h, w = image.shape[:2]
     gauss = np.random.normal(0, sigma_sq, (h, w))
     gauss = gauss.reshape(h, w)
     image = image + gauss
@@ -23,11 +23,11 @@ def spec_augment(spec: np.ndarray,
                  num_mask=2,
                  freq_masking=0.15,
                  time_masking=0.20,
-                 value=0):
+                 value=0.0):
     spec = spec.copy()
     num_mask = random.randint(1, num_mask)
     for i in range(num_mask):
-        all_freqs_num, all_frames_num  = spec.shape
+        all_freqs_num, all_frames_num = spec.shape[:2]
         freq_percentage = random.uniform(0.0, freq_masking)
 
         num_freqs_to_mask = int(freq_percentage * all_freqs_num)
@@ -58,7 +58,7 @@ class SpecAugment:
                             self.num_mask,
                             self.freq_masking,
                             self.time_masking,
-                            image.min())
+                            value=0.0)
 
 
 class Compose:
@@ -157,10 +157,8 @@ class RandomGaussianBlur:
 
 class ImageToTensor:
     def __call__(self, image):
-        delta = librosa.feature.delta(image)
-        accelerate = librosa.feature.delta(image, order=2)
-        image = np.stack([image, delta, accelerate], axis=0)
-        image = image.astype(np.float32) / 100
+        image = np.transpose(image, (2, 0, 1))
+        image = image.astype(np.float32)
         image = torch.from_numpy(image)
         return image
 
@@ -197,7 +195,7 @@ class PadToSize:
         if signal.shape[1] < self.size:
             padding = self.size - signal.shape[1]
             offset = padding // 2
-            pad_width = ((0, 0), (offset, padding - offset))
+            pad_width = ((0, 0), (offset, padding - offset), (0, 0))
             if self.mode == 'constant':
                 signal = np.pad(signal, pad_width,
                                 'constant', constant_values=signal.min())

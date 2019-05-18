@@ -39,10 +39,42 @@ def audio_to_melspectrogram(audio):
                                                  hop_length=config.hop_length,
                                                  n_fft=config.n_fft,
                                                  fmin=config.fmin,
-                                                 fmax=config.fmax)
+                                                 fmax=config.fmax,
+                                                 power=2)
     spectrogram = librosa.power_to_db(spectrogram)
-    spectrogram = spectrogram.astype(np.float32)
+    # delta = librosa.feature.delta(spectrogram, order=1)
+    # accelerate = librosa.feature.delta(spectrogram, order=2)
+    spectrogram -= spectrogram.min()
+    spectrogram /= 80.0
     return spectrogram
+
+
+def audio_to_pcen(audio):
+    spectrogram = librosa.feature.melspectrogram(audio,
+                                                 sr=config.sampling_rate,
+                                                 n_mels=config.n_mels,
+                                                 hop_length=config.hop_length,
+                                                 n_fft=config.n_fft,
+                                                 fmin=config.fmin,
+                                                 fmax=config.fmax,
+                                                 power=1)
+    # amplitude = librosa.amplitude_to_db(spectrogram, ref=np.max)
+    pcen = librosa.pcen(spectrogram,
+                        sr=config.sampling_rate,
+                        hop_length=config.hop_length)
+    pcen /= 4.0
+    return pcen
+
+
+def audio_to_tempogram(audio):
+    oenv = librosa.onset.onset_strength(y=audio,
+                                        sr=config.sampling_rate,
+                                        hop_length=config.hop_length)
+    tempogram = librosa.feature.tempogram(onset_envelope=oenv,
+                                          sr=config.sampling_rate,
+                                          hop_length=config.hop_length,
+                                          win_length=config.n_mels)
+    return tempogram
 
 
 def show_melspectrogram(mels, title='Log-frequency power spectrogram'):
@@ -65,12 +97,19 @@ def read_as_melspectrogram(file_path, time_stretch=1.0, pitch_shift=0.0,
     if pitch_shift != 0.0:
         librosa.effects.pitch_shift(x, config.sampling_rate, n_steps=pitch_shift)
 
-    mels = audio_to_melspectrogram(x)
+    melspectrogram = audio_to_melspectrogram(x)
+    pcen = audio_to_pcen(x)
+    tempogram = audio_to_tempogram(x)
+
     if debug_display:
         import IPython
         IPython.display.display(IPython.display.Audio(x, rate=config.sampling_rate))
-        show_melspectrogram(mels)
-    return mels
+        show_melspectrogram(melspectrogram)
+        show_melspectrogram(pcen)
+        show_melspectrogram(tempogram)
+
+    result = np.stack([melspectrogram, pcen, tempogram], axis=2)
+    return result.astype(np.float32)
 
 
 if __name__ == "__main__":
