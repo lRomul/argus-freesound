@@ -38,7 +38,7 @@ PARAMS = {
         'kernel_size': 7
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
-        'beta': 0.7,
+        'beta': 0.3,
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
