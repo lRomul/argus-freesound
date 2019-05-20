@@ -57,7 +57,7 @@ folds = list(range(n_folds))
 
 class audio:
     sampling_rate = 44100
-    hop_length = 345 * 3
+    hop_length = 345 * 4
     fmin = 20
     fmax = sampling_rate // 2
     n_mels = 128
