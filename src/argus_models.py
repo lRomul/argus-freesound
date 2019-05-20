@@ -8,6 +8,7 @@ from src.models import senet
 from src.models.feature_extractor import FeatureExtractor
 from src.models.simple_kaggle import SimpleKaggle
 from src.models.simple_attention import SimpleAttention
+from src.models.skip_attention import SkipAttention
 from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss, BCEMaxOutlierLoss
 from src import config
 
@@ -19,7 +20,8 @@ class FreesoundModel(Model):
         'FeatureExtractor': FeatureExtractor,
         'SimpleKaggle': SimpleKaggle,
         'se_resnext50_32x4d': senet.se_resnext50_32x4d,
-        'SimpleAttention': SimpleAttention
+        'SimpleAttention': SimpleAttention,
+        'SkipAttention': SkipAttention
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
