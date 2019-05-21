@@ -96,7 +96,8 @@ class SkipBlock(nn.Module):
         self.scale_factor = scale_factor
 
     def forward(self, x):
-        x = F.avg_pool2d(x, self.scale_factor)
+        if self.scale_factor >= 2:
+            x = F.avg_pool2d(x, self.scale_factor)
         x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
@@ -122,9 +123,11 @@ class SkipAttention(nn.Module):
 
         self.conv4 = ConvBlock(in_channels=base_size*4, out_channels=base_size*8)
 
-        self.attention = ConvolutionalBlockAttentionModule(base_size*8,
+        self.attention = ConvolutionalBlockAttentionModule(base_size*8*4,
                                                            ratio=ratio,
                                                            kernel_size=kernel_size)
+        self.merge = SkipBlock(base_size*8*4, base_size*8, 1)
+
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
             nn.Dropout(dropout),
@@ -146,9 +149,12 @@ class SkipAttention(nn.Module):
         skip3 = self.skip3(x)
 
         x = self.conv4(x)
-        x += skip1 + skip2 + skip3
+
+        x = torch.cat([x, skip1, skip2, skip3], dim=1)
 
         x = self.attention(x)
+        x = self.merge(x)
+
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
