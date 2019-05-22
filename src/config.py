@@ -50,6 +50,7 @@ else:
 folds_data_pkl_dir = save_data_dir / 'folds_data'
 augment_folds_data_pkl_dir = save_data_dir / 'augment_folds_data'
 noisy_data_pkl_dir = save_data_dir / 'noisy_data'
+corrections_json_path = Path('/workdir/corrections.json')
 
 n_folds = 5
 folds = list(range(n_folds))

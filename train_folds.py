@@ -33,7 +33,7 @@ PARAMS = {
     'nn_module': ('SkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.16,
+        'dropout': 0.2,
         'ratio': 16,
         'kernel_size': 7
     }),
