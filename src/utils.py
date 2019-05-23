@@ -1,7 +1,32 @@
+import re
 import pickle
+import numpy as np
+from pathlib import Path
+from scipy.stats.mstats import gmean
 
 from src.datasets import get_noisy_data_generator, get_folds_data, get_augment_folds_data_generator
 from src import config
+
+
+def gmean_preds_blend(probs_df_lst):
+    blend_df = probs_df_lst[0]
+    blend_values = np.stack([df.loc[blend_df.index].values for df in probs_df_lst], axis=0)
+    blend_values = gmean(blend_values, axis=0)
+
+    blend_df.values[:] = blend_values
+    return blend_df
+
+
+def get_best_model_path(dir_path: Path):
+    model_scores = []
+    for model_path in dir_path.glob('*.pth'):
+        score = re.search(r'-(\d+(?:\.\d+)?).pth', str(model_path))
+        if score is not None:
+            score = score.group(0)[1:-4]
+            model_scores.append((model_path, score))
+    model_score = sorted(model_scores, key=lambda x: x[1])
+    best_model_path = model_score[-1][0]
+    return best_model_path
 
 
 def pickle_save(obj, filename):

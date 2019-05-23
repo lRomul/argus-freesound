@@ -1,8 +1,5 @@
-import json
-import argparse
-
-from argus.callbacks import MonitorCheckpoint, \
-    EarlyStopping, LoggingToFile, ReduceLROnPlateau
+from argus import load_model
+from argus.callbacks import MonitorCheckpoint, LoggingToFile
 
 from torch.utils.data import DataLoader
 
@@ -10,13 +7,13 @@ from src.datasets import FreesoundDataset, FreesoundNoisyDataset, RandomDataset
 from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
-from src.utils import load_noisy_data, load_folds_data
+from src.lr_scheduler import CosineAnnealing
+from src.utils import load_noisy_data, load_folds_data, get_best_model_path
 from src import config
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--experiment', required=True, type=str)
-args = parser.parse_args()
+BASE_EXPERIMENT_NAME = 'noisy_mixup_001'
+EXPERIMENT_NAME = 'noisy_mixup_001_after_001'
 
 BATCH_SIZE = 128
 CROP_SIZE = 256
@@ -24,35 +21,17 @@ DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
 MIXER_PROB = 0.66
 WRAP_PAD_PROB = 0.5
+BASE_LR = 0.0003
 if config.kernel:
     NUM_WORKERS = 2
 else:
     NUM_WORKERS = 8
-SAVE_DIR = config.experiments_dir / args.experiment
-PARAMS = {
-    'nn_module': ('SkipAttention', {
-        'num_classes': len(config.classes),
-        'base_size': 64,
-        'dropout': 0.16,
-        'ratio': 16,
-        'kernel_size': 7
-    }),
-    'loss': ('OnlyNoisyLSoftLoss', {
-        'beta': 0.7,
-        'noisy_weight': 0.5,
-        'curated_weight': 0.5
-    }),
-    'optimizer': ('Adam', {'lr': 0.0006}),
-    'device': 'cuda',
-    'amp': {
-        'opt_level': 'O2',
-        'keep_batchnorm_fp32': True,
-        'loss_scale': "dynamic"
-    }
-}
+DEVICE = 'cuda'
+BASE_DIR = config.experiments_dir / BASE_EXPERIMENT_NAME
+SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
 
 
-def train_fold(save_dir, train_folds, val_folds,
+def train_fold(base_model_path, save_dir, train_folds, val_folds,
                folds_data, noisy_data):
     train_transfrom = get_transforms(train=True,
                                      size=CROP_SIZE,
@@ -82,18 +61,18 @@ def train_fold(save_dir, train_folds, val_folds,
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE * 2,
                             shuffle=False, num_workers=NUM_WORKERS)
 
-    model = FreesoundModel(PARAMS)
+    model = load_model(base_model_path, device=DEVICE)
+    model.set_lr(BASE_LR)
 
     callbacks = [
-        MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=6, factor=0.6, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=18),
+        MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=3),
+        CosineAnnealing(T_0=10, T_mult=2, eta_min=0.00001),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
     model.fit(train_loader,
               val_loader=val_loader,
-              max_epochs=700,
+              max_epochs=150,
               callbacks=callbacks,
               metrics=['multi_accuracy', 'lwlrap'])
 
@@ -107,10 +86,6 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'source.py', 'w') as outfile:
         outfile.write(open(__file__).read())
 
-    print("Model params", PARAMS)
-    with open(SAVE_DIR / 'params.json', 'w') as outfile:
-        json.dump(PARAMS, outfile)
-
     folds_data = load_folds_data()
     noisy_data = load_noisy_data()
 
@@ -118,7 +93,9 @@ if __name__ == "__main__":
         val_folds = [fold]
         train_folds = list(set(config.folds) - set(val_folds))
         save_fold_dir = SAVE_DIR / f'fold_{fold}'
+        base_model_path = get_best_model_path(BASE_DIR / f'fold_{fold}')
+        print(f"Base model path: {base_model_path}")
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
-        train_fold(save_fold_dir, train_folds, val_folds,
+        train_fold(base_model_path, save_fold_dir, train_folds, val_folds,
                    folds_data, noisy_data)

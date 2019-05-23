@@ -1,6 +1,7 @@
 import cv2
 import torch
 import random
+import librosa
 import numpy as np
 
 cv2.setNumThreads(0)
@@ -156,7 +157,9 @@ class RandomGaussianBlur:
 
 class ImageToTensor:
     def __call__(self, image):
-        image = np.stack([image, image, image], axis=0)
+        delta = librosa.feature.delta(image)
+        accelerate = librosa.feature.delta(image, order=2)
+        image = np.stack([image, delta, accelerate], axis=0)
         image = image.astype(np.float32) / 100
         image = torch.from_numpy(image)
         return image
