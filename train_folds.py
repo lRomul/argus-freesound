@@ -33,7 +33,7 @@ PARAMS = {
     'nn_module': ('SkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.16,
+        'dropout': 0.2,
         'ratio': 16,
         'kernel_size': 7
     }),
@@ -42,7 +42,7 @@ PARAMS = {
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0006}),
+    'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
     'amp': {
         'opt_level': 'O2',
