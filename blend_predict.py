@@ -9,9 +9,9 @@ from src import config
 
 
 EXPERIMENTS = [
-    'lsoft_008',
-    'augment_audio_002',
-    'noisy_mixup_001'
+    'skip_attention_003',
+    'corrections_001',
+    'corrections_002'
 ]
 
 DEVICE = 'cuda'
