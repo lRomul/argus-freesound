@@ -42,7 +42,7 @@ PARAMS = {
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0006}),
+    'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
     'amp': {
         'opt_level': 'O2',
