@@ -106,7 +106,7 @@ class SkipBlock(nn.Module):
 
 class SkipAttention(nn.Module):
     def __init__(self, num_classes, base_size=64, dropout=0.2,
-                 ratio=16, kernel_size=7):
+                 ratio=16, kernel_size=7, last_filters=8):
         super().__init__()
 
         self.conv1 = ConvBlock(in_channels=3, out_channels=base_size)
@@ -126,12 +126,12 @@ class SkipAttention(nn.Module):
         self.attention = ConvolutionalBlockAttentionModule(base_size*8*4,
                                                            ratio=ratio,
                                                            kernel_size=kernel_size)
-        self.merge = SkipBlock(base_size*8*4, base_size*8, 1)
+        self.merge = SkipBlock(base_size*8*4, base_size*last_filters, 1)
 
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
             nn.Dropout(dropout),
-            nn.Linear(base_size*8, base_size*2),
+            nn.Linear(base_size*last_filters, base_size*2),
             nn.PReLU(),
             nn.BatchNorm1d(base_size*2),
             nn.Dropout(dropout/2),
