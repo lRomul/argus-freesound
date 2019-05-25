@@ -25,15 +25,22 @@ BATCH_SIZE = 16
 
 
 def pred_val_fold(predictor, fold):
+    fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'val'
+    fold_prediction_dir.mkdir(parents=True, exist_ok=True)
+
     train_folds_df = pd.read_csv(config.train_folds_path)
     train_folds_df = train_folds_df[train_folds_df.fold == fold]
 
     fname_lst = []
     pred_lst = []
-    for fname, row in train_folds_df.iterrows():
+    for i, row in train_folds_df.iterrows():
         image = read_as_melspectrogram(row.file_path)
         pred = predictor.predict(image)
 
+        pred_path = fold_prediction_dir / f'{row.fname}.npy'
+        np.save(pred_path, pred)
+
+        pred = pred.mean(axis=0)
         pred_lst.append(pred)
         fname_lst.append(row.fname)
 
@@ -42,17 +49,22 @@ def pred_val_fold(predictor, fold):
                             index=fname_lst,
                             columns=config.classes)
     probs_df.index.name = 'fname'
-
-    fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'val'
-    fold_prediction_dir.mkdir(parents=True, exist_ok=True)
     probs_df.to_csv(fold_prediction_dir / 'probs.csv')
 
 
 def pred_test_fold(predictor, fold, test_data):
+    fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'test'
+    fold_prediction_dir.mkdir(parents=True, exist_ok=True)
+
     fname_lst, images_lst = test_data
     pred_lst = []
-    for image in images_lst:
+    for fname, image in zip(fname_lst, images_lst):
         pred = predictor.predict(image)
+
+        pred_path = fold_prediction_dir / f'{fname}.npy'
+        np.save(pred_path, pred)
+
+        pred = pred.mean(axis=0)
         pred_lst.append(pred)
 
     preds = np.stack(pred_lst, axis=0)
@@ -60,9 +72,6 @@ def pred_test_fold(predictor, fold, test_data):
                            index=fname_lst,
                            columns=config.classes)
     subm_df.index.name = 'fname'
-
-    fold_prediction_dir = PREDICTION_DIR / f'fold_{fold}' / 'test'
-    fold_prediction_dir.mkdir(parents=True, exist_ok=True)
     subm_df.to_csv(fold_prediction_dir / 'probs.csv')
 
 

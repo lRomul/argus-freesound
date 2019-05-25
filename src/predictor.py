@@ -25,7 +25,6 @@ def tile_prediction(model, image, transforms,
         preds_lst.append(pred_batch)
 
     pred = torch.cat(preds_lst, dim=0)
-    pred = pred.mean(dim=0)
 
     return pred.cpu().numpy()
 

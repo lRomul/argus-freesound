@@ -24,6 +24,8 @@ def pred_test(predictor, test_data):
     pred_lst = []
     for image in images_lst:
         pred = predictor.predict(image)
+
+        pred = pred.mean(axis=0)
         pred_lst.append(pred)
 
     preds = np.stack(pred_lst, axis=0)
