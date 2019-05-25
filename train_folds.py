@@ -37,7 +37,7 @@ PARAMS = {
         'ratio': 16,
         'kernel_size': 7,
         'last_filters': 8,
-        'last_fc': 2
+        'last_fc': 4
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.7,
