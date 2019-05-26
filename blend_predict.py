@@ -9,9 +9,9 @@ from src import config
 
 
 EXPERIMENTS = [
-    'skip_attention_003',
-    'corrections_001',
-    'corrections_002'
+    'corrections_005',
+    'corrections_006',
+    'auxiliary_001'
 ]
 
 DEVICE = 'cuda'
