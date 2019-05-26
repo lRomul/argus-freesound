@@ -44,10 +44,10 @@ PARAMS = {
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0006}),
+    'optimizer': ('Adam', {'lr': 0.0012}),
     'device': 'cuda',
     'aux': {
-        'weights': [0.6, 0.2, 0.125, 0.075]
+        'weights': [1.0, 0.4, 0.2, 0.1]
     },
     'amp': {
         'opt_level': 'O2',
@@ -92,7 +92,7 @@ def train_fold(save_dir, train_folds, val_folds,
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
         ReduceLROnPlateau(monitor='val_lwlrap', patience=7, factor=0.64, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=27),
+        EarlyStopping(monitor='val_lwlrap', patience=36),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
