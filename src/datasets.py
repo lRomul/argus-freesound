@@ -28,7 +28,7 @@ def get_test_data():
     return fname_lst, images_lst
 
 
-def get_folds_data(corrections):
+def get_folds_data(corrections=None):
     print("Start generate folds data")
     print("Audio config", get_audio_config())
     train_folds_df = pd.read_csv(config.train_folds_path)
@@ -39,14 +39,15 @@ def get_folds_data(corrections):
     for i, row in train_folds_df.iterrows():
         labels = row.labels
 
-        if row.fname in corrections:
-            action = corrections[row.fname]
-            if action == 'remove':
-                print(f"Skip {row.fname}")
-                continue
-            else:
-                print(f"Replace labels {row.fname} from {labels} to {action}")
-                labels = action
+        if corrections is not None:
+            if row.fname in corrections:
+                action = corrections[row.fname]
+                if action == 'remove':
+                    print(f"Skip {row.fname}")
+                    continue
+                else:
+                    print(f"Replace labels {row.fname} from {labels} to {action}")
+                    labels = action
 
         folds_lst.append(row.fold)
         audio_paths_lst.append(row.file_path)

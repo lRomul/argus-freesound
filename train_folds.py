@@ -24,13 +24,14 @@ DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
 MIXER_PROB = 0.66
 WRAP_PAD_PROB = 0.5
+CORRECTIONS = False
 if config.kernel:
     NUM_WORKERS = 2
 else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SkipAttention', {
+    'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
         'dropout': 0.2,
@@ -46,6 +47,9 @@ PARAMS = {
     }),
     'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
+    'aux': {
+        'weights': [1.0, 0.4, 0.2, 0.1]
+    },
     'amp': {
         'opt_level': 'O2',
         'keep_batchnorm_fp32': True,
@@ -113,7 +117,7 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
-    folds_data = load_folds_data()
+    folds_data = load_folds_data(use_corrections=CORRECTIONS)
     noisy_data = load_noisy_data()
 
     for fold in config.folds:
