@@ -30,7 +30,7 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SkipAttention', {
+    'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
         'dropout': 0.2,
@@ -46,6 +46,9 @@ PARAMS = {
     }),
     'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
+    'aux': {
+        'weights': [1.0, 0.4, 0.2, 0.1]
+    },
     'amp': {
         'opt_level': 'O2',
         'keep_batchnorm_fp32': True,
