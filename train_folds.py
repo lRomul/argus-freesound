@@ -24,6 +24,7 @@ DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
 MIXER_PROB = 0.66
 WRAP_PAD_PROB = 0.5
+CORRECTIONS = False
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -44,7 +45,7 @@ PARAMS = {
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0012}),
+    'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
     'aux': {
         'weights': [1.0, 0.4, 0.2, 0.1]
@@ -91,8 +92,8 @@ def train_fold(save_dir, train_folds, val_folds,
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=7, factor=0.64, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=36),
+        ReduceLROnPlateau(monitor='val_lwlrap', patience=6, factor=0.6, min_lr=1e-8),
+        EarlyStopping(monitor='val_lwlrap', patience=18),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
@@ -116,7 +117,7 @@ if __name__ == "__main__":
     with open(SAVE_DIR / 'params.json', 'w') as outfile:
         json.dump(PARAMS, outfile)
 
-    folds_data = load_folds_data()
+    folds_data = load_folds_data(use_corrections=CORRECTIONS)
     noisy_data = load_noisy_data()
 
     for fold in config.folds:

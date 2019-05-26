@@ -42,12 +42,16 @@ def pickle_load(filename):
         return pickle.load(f)
     
 
-def load_folds_data():
-    with open(config.corrections_json_path) as file:
-        corrections = json.load(file)
-    print("Corrections:", corrections)
+def load_folds_data(use_corrections=True):
+    if use_corrections:
+        with open(config.corrections_json_path) as file:
+            corrections = json.load(file)
+        print("Corrections:", corrections)
+        pkl_name = f'{config.audio.get_hash(corrections=corrections)}.pkl'
+    else:
+        corrections = None
+        pkl_name = f'{config.audio.get_hash()}.pkl'
 
-    pkl_name = f'{config.audio.get_hash(corrections=corrections)}.pkl'
     folds_data_pkl_path = config.folds_data_pkl_dir / pkl_name
 
     if folds_data_pkl_path.exists():
