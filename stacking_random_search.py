@@ -101,6 +101,7 @@ def train_folds(save_dir, folds_data):
 
 
 if __name__ == "__main__":
+    SAVE_DIR.mkdir(parents=True, exist_ok=True)
     with open(SAVE_DIR / 'source.py', 'w') as outfile:
         outfile.write(open(__file__).read())
 
