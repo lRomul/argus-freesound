@@ -24,7 +24,7 @@ DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.33
 MIXER_PROB = 0.66
 WRAP_PAD_PROB = 0.5
-CORRECTIONS = False
+CORRECTIONS = True
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -37,7 +37,7 @@ PARAMS = {
         'dropout': 0.2,
         'ratio': 16,
         'kernel_size': 7,
-        'last_filters': 8,
+        'last_filters': 4,
         'last_fc': 4
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
