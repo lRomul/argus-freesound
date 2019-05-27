@@ -22,7 +22,6 @@ EXPERIMENTS = [
     'auxiliary_001'
 ]
 BATCH_SIZE = 128
-CROP_SIZE = 16
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
 if config.kernel:
@@ -31,14 +30,14 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('SimpleLSTM', {
-        'input_size': len(config.classes) * len(EXPERIMENTS),
+    'nn_module': ('FCNet', {
+        'in_channels': len(config.classes) * len(EXPERIMENTS),
         'num_classes': len(config.classes),
-        'p_dropout': 0.2,
-        'base_size': 128,
-        'seq_len': CROP_SIZE
+        'base_size': 64,
+        'reduction_scale': 8,
+        'p_dropout': 0.2
     }),
-    'loss': 'BCELoss',
+    'loss': 'BCEWithLogitsLoss',
     'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
 }
@@ -46,10 +45,10 @@ PARAMS = {
 
 def train_fold(save_dir, train_folds, val_folds, folds_data):
     train_dataset = StackingDataset(folds_data, train_folds,
-                                    get_transforms(True, CROP_SIZE),
+                                    get_transforms(True),
                                     DATASET_SIZE)
     val_dataset = StackingDataset(folds_data, val_folds,
-                                  get_transforms(False, CROP_SIZE))
+                                  get_transforms(False))
 
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
                               shuffle=True, drop_last=True,

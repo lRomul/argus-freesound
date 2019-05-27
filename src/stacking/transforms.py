@@ -44,23 +44,41 @@ class RandomCrop:
         return signal[start: start + self.size]
 
 
+class RandomSizedCrop:
+    def __call__(self, signal):
+        size = random.randint(1, signal.shape[0])
+        start = random.randint(0, signal.shape[0] - size)
+        return signal[start: start + size]
+
+
+class MeanOverTime:
+    def __call__(self, probs):
+        return probs.mean(axis=0)
+
+
+class Flatten:
+    def __call__(self, probs):
+        return probs.flatten()
+
+
 class ToTensor:
     def __call__(self, probs):
         probs = torch.from_numpy(probs)
         return probs
 
 
-def get_transforms(train, size):
+def get_transforms(train):
     if train:
         transforms = Compose([
-            PadToSize(size, mode='wrap'),
-            RandomCrop(size),
+            UseWithProb(Compose([
+                RandomSizedCrop()
+            ]), prob=0.5),
+            MeanOverTime(),
             ToTensor()
         ])
     else:
         transforms = Compose([
-            PadToSize(size),
-            CenterCrop(size),
+            MeanOverTime(),
             ToTensor()
         ])
     return transforms

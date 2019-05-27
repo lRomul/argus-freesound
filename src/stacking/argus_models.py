@@ -1,9 +1,11 @@
+import torch
 from argus import Model
 
-from src.stacking.models import SimpleLSTM
+from src.stacking.models import FCNet
 
 
 class StackingModel(Model):
     nn_module = {
-        'SimpleLSTM': SimpleLSTM
+        'FCNet': FCNet
     }
+    prediction_transform = torch.nn.Sigmoid
