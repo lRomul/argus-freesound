@@ -1,6 +1,10 @@
+import time
 import torch
+import random
 import numpy as np
 import pandas as pd
+
+from torch.utils.data import Dataset
 
 from src import config
 
@@ -44,4 +48,40 @@ def get_out_of_folds_data(experiments, corrections=None):
         targets_lst.append(target)
         fname_lst.append(row.fname)
 
-    return probs_lst, targets_lst, folds_lst, fname_lst
+    return probs_lst, targets_lst, folds_lst
+
+
+class StackingDataset(Dataset):
+    def __init__(self, folds_data, folds,
+                 transform=None, size=None):
+        super().__init__()
+        self.folds = folds
+        self.transform = transform
+        self.size = size
+
+        self.probs_lst = []
+        self.targets_lst = []
+        for prob, trg, fold in zip(*folds_data):
+            if fold in folds:
+                self.probs_lst.append(prob)
+                self.targets_lst.append(trg)
+
+    def __len__(self):
+        if self.size is None:
+            return len(self.probs_lst)
+        else:
+            return self.size
+
+    def __getitem__(self, idx):
+        if self.size is not None:
+            seed = int(time.time() * 1000.0) + idx
+            np.random.seed(seed % (2 ** 31))
+            idx = np.random.randint(len(self.probs_lst))
+
+        probs = self.probs_lst[idx].copy()
+        target = self.targets_lst[idx].clone()
+
+        if self.transform is not None:
+            probs = self.transform(probs)
+
+        return probs, target
