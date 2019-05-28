@@ -18,7 +18,7 @@ def get_test_data():
     print("Start load test data")
     fname_lst = []
     wav_path_lst = []
-    for wav_path in config.test_dir.glob('*.wav'):
+    for wav_path in sorted(config.test_dir.glob('*.wav')):
         wav_path_lst.append(wav_path)
         fname_lst.append(wav_path.name)
 
