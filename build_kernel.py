@@ -63,3 +63,5 @@ if __name__ == '__main__':
                  template_name='kernel_template.py')
     build_script(IGNORE_LIST, PACKAGES,
                  template_name='blend_kernel_template.py')
+    build_script(IGNORE_LIST, PACKAGES,
+                 template_name='stacking_kernel_template.py')
