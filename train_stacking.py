@@ -21,7 +21,7 @@ EXPERIMENTS = [
     'corrections_006',
     'auxiliary_001'
 ]
-BATCH_SIZE = 128
+BATCH_SIZE = 32
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
 if config.kernel:
@@ -33,12 +33,12 @@ PARAMS = {
     'nn_module': ('FCNet', {
         'in_channels': len(config.classes) * len(EXPERIMENTS),
         'num_classes': len(config.classes),
-        'base_size': 64,
-        'reduction_scale': 8,
-        'p_dropout': 0.2
+        'base_size': 256,
+        'reduction_scale': 4,
+        'p_dropout': 0.06303391930169855
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.0009}),
+    'optimizer': ('Adam', {'lr': 6.41972773090878e-05}),
     'device': 'cuda',
 }
 
@@ -60,8 +60,11 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
 
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
-        ReduceLROnPlateau(monitor='val_lwlrap', patience=6, factor=0.6, min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=18),
+        ReduceLROnPlateau(monitor='val_lwlrap',
+                          patience=5,
+                          factor=0.6644578098312048,
+                          min_lr=1e-8),
+        EarlyStopping(monitor='val_lwlrap', patience=12),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
