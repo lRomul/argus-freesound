@@ -21,7 +21,7 @@ EXPERIMENTS = [
     'corrections_006',
     'auxiliary_001'
 ]
-BATCH_SIZE = 128
+BATCH_SIZE = 32
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
 if config.kernel:
@@ -35,10 +35,10 @@ PARAMS = {
         'num_classes': len(config.classes),
         'base_size': 256,
         'reduction_scale': 4,
-        'p_dropout': 0.007562750960367792
+        'p_dropout': 0.04549876782925022
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 0.00010461508101460579}),
+    'optimizer': ('Adam', {'lr': 8.81298399933012e-05}),
     'device': 'cuda',
 }
 
@@ -61,8 +61,8 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
         ReduceLROnPlateau(monitor='val_lwlrap',
-                          patience=12,
-                          factor=0.6078810021829701,
+                          patience=10,
+                          factor=0.7843733841750502,
                           min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=24),
         LoggingToFile(save_dir / 'log.txt'),
