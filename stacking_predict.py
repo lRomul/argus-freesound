@@ -106,7 +106,7 @@ if __name__ == "__main__":
         stack_pred = stacking_pred(experiment_dir, stack_probs)
         stack_pred_lst.append(stack_pred)
 
-    stack_pred = gmean(exp_pred_lst, axis=0)
+    stack_pred = gmean(stack_pred_lst, axis=0)
 
     stack_pred_df = pd.DataFrame(data=stack_pred,
                                  index=fname_lst,
