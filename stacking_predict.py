@@ -11,6 +11,8 @@ from src import config
 from src.stacking.predictor import StackPredictor
 
 
+NAME = "stacking_001"
+
 EXPERIMENTS = [
     'corrections_005',
     'corrections_006',
@@ -83,6 +85,7 @@ def stacking_pred(experiment_dir, stack_probs):
 
 
 if __name__ == "__main__":
+    print("Name", NAME)
     print("Experiments", EXPERIMENTS)
     print("Stacking experiments", STACKING_EXPERIMENTS)
     print("Device", DEVICE)
