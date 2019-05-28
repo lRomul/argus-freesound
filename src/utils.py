@@ -11,7 +11,8 @@ from src import config
 
 def gmean_preds_blend(probs_df_lst):
     blend_df = probs_df_lst[0]
-    blend_values = np.stack([df.loc[blend_df.index].values for df in probs_df_lst], axis=0)
+    blend_values = np.stack([df.loc[blend_df.index.values].values
+                             for df in probs_df_lst], axis=0)
     blend_values = gmean(blend_values, axis=0)
 
     blend_df.values[:] = blend_values
