@@ -4,6 +4,8 @@ import random
 import librosa
 import numpy as np
 
+from src.random_resized_crop import RandomResizedCrop
+
 cv2.setNumThreads(0)
 
 
@@ -216,6 +218,10 @@ def get_transforms(train, size, wrap_pad_prob=0.5):
             RandomCrop(size),
             # UseWithProb(HorizontalFlip(), 0.25),
             # UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.1),
+            UseWithProb(
+                RandomResizedCrop(scale=(0.8, 1.0), ratio=(1.7, 2.3)),
+                prob=0.5
+            ),
             UseWithProb(SpecAugment(num_mask=2,
                                     freq_masking=0.15,
                                     time_masking=0.20), 0.5),
