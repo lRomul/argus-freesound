@@ -37,7 +37,7 @@ PARAMS = {
         'dropout': 0.2,
         'ratio': 16,
         'kernel_size': 7,
-        'last_filters': 4,
+        'last_filters': 8,
         'last_fc': 4
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
