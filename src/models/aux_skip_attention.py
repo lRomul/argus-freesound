@@ -104,7 +104,27 @@ class SkipBlock(nn.Module):
         return x
 
 
-class SkipAttention(nn.Module):
+class AuxBlock(nn.Module):
+    def __init__(self, last_fc, num_classes, base_size, dropout):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(base_size*8, base_size*last_fc),
+            nn.PReLU(),
+            nn.BatchNorm1d(base_size*last_fc),
+            nn.Dropout(dropout/2),
+            nn.Linear(base_size*last_fc, num_classes),
+        )
+
+    def forward(self, x):
+        x = self.avg_pool(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+
+
+class AuxSkipAttention(nn.Module):
     def __init__(self, num_classes, base_size=64,
                  dropout=0.2, ratio=16, kernel_size=7,
                  last_filters=8, last_fc=2):
@@ -130,6 +150,7 @@ class SkipAttention(nn.Module):
         self.merge = SkipBlock(base_size*8*4, base_size*last_filters, 1)
 
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
+
         self.fc = nn.Sequential(
             nn.Dropout(dropout),
             nn.Linear(base_size*last_filters, base_size*last_fc),
@@ -139,15 +160,22 @@ class SkipAttention(nn.Module):
             nn.Linear(base_size*last_fc, num_classes),
         )
 
+        self.aux1 = AuxBlock(last_fc, num_classes, base_size, dropout)
+        self.aux2 = AuxBlock(last_fc, num_classes, base_size, dropout)
+        self.aux3 = AuxBlock(last_fc, num_classes, base_size, dropout)
+
     def forward(self, x):
         x = self.conv1(x)
         skip1 = self.skip1(x)
+        aux1 = self.aux1(skip1)
 
         x = self.conv2(x)
         skip2 = self.skip2(x)
+        aux2 = self.aux2(skip2)
 
         x = self.conv3(x)
         skip3 = self.skip3(x)
+        aux3 = self.aux3(skip3)
 
         x = self.conv4(x)
 
@@ -159,4 +187,4 @@ class SkipAttention(nn.Module):
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        return x
+        return x, aux3, aux2, aux1

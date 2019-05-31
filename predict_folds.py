@@ -109,7 +109,7 @@ def calc_lwlrap_on_val():
     }
     print(result)
     with open(PREDICTION_DIR / 'val_lwlrap.json', 'w') as file:
-        json.dump(result, file)
+        json.dump(result, file, indent=2)
 
 
 if __name__ == "__main__":

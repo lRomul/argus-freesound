@@ -1,4 +1,5 @@
 import re
+import json
 import pickle
 import numpy as np
 from pathlib import Path
@@ -41,14 +42,22 @@ def pickle_load(filename):
         return pickle.load(f)
     
 
-def load_folds_data():
-    pkl_name = f'{config.audio.get_hash()}.pkl'
+def load_folds_data(use_corrections=True):
+    if use_corrections:
+        with open(config.corrections_json_path) as file:
+            corrections = json.load(file)
+        print("Corrections:", corrections)
+        pkl_name = f'{config.audio.get_hash(corrections=corrections)}.pkl'
+    else:
+        corrections = None
+        pkl_name = f'{config.audio.get_hash()}.pkl'
+
     folds_data_pkl_path = config.folds_data_pkl_dir / pkl_name
 
     if folds_data_pkl_path.exists():
         folds_data = pickle_load(folds_data_pkl_path)
     else:
-        folds_data = get_folds_data()
+        folds_data = get_folds_data(corrections)
         if not config.folds_data_pkl_dir.exists():
             config.folds_data_pkl_dir.mkdir(parents=True, exist_ok=True)
         pickle_save(folds_data, folds_data_pkl_path)
