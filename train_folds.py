@@ -34,7 +34,7 @@ PARAMS = {
     'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.3,
+        'dropout': 0.4,
         'ratio': 16,
         'kernel_size': 7,
         'last_filters': 8,
@@ -48,7 +48,7 @@ PARAMS = {
     'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
     'aux': {
-        'weights': [1.0, 0.2, 0.1, 0.05]
+        'weights': [1.0, 0.4, 0.2, 0.1]
     },
     'amp': {
         'opt_level': 'O2',
