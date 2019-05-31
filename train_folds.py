@@ -34,7 +34,7 @@ PARAMS = {
     'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.4,
+        'dropout': 0.5,
         'ratio': 16,
         'kernel_size': 7,
         'last_filters': 8,
