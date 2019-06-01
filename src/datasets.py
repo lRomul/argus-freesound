@@ -235,3 +235,64 @@ class RandomDataset(Dataset):
         dataset = self.datasets[dataset_idx]
         idx = random.randint(0, len(dataset) - 1)
         return dataset[idx]
+
+
+class SmallConcatDataset(Dataset):
+    def __init__(self, folds_data, folds,
+                 max_patch_size=128, max_size=256,
+                 transform=None,
+                 mixer=None):
+        super().__init__()
+        self.folds = folds
+        self.transform = transform
+        self.mixer = mixer
+        self.max_size = max_size
+
+        self.images_lst = []
+        self.targets_lst = []
+        self.small_images_lst = []
+        self.small_targets_lst = []
+        for img, trg, fold in zip(*folds_data):
+            if fold in folds:
+                if img.shape[1] <= max_patch_size:
+                    self.small_images_lst.append(img)
+                    self.small_targets_lst.append(trg)
+
+                self.images_lst.append(img)
+                self.targets_lst.append(trg)
+
+    def __len__(self):
+        return len(self.images_lst)
+
+    def __getitem__(self, idx):
+        image = self.images_lst[idx].copy()
+        target = self.targets_lst[idx].clone()
+
+        size = image.shape[1]
+
+        seed = int(time.time() * 1000.0) + idx
+        random.seed(seed)
+        np.random.seed(seed % (2 ** 31))
+
+        while True:
+            idx = random.randint(0, len(self.small_images_lst) - 1)
+            rnd_image = self.small_images_lst[idx].copy()
+            rnd_target = self.small_targets_lst[idx].clone()
+
+            if rnd_image.shape[1] + size > self.max_size:
+                break
+
+            size = rnd_image.shape[1] + size
+            image = np.concatenate([image, rnd_image], axis=1)
+            target = target + rnd_target
+
+        target = np.clip(target, 0.0, 1.0)
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        if self.mixer is not None:
+            image, target = self.mixer(self, image, target)
+
+        noisy = torch.tensor(0, dtype=torch.uint8)
+        return image, target, noisy

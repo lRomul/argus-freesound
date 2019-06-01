@@ -6,7 +6,8 @@ from argus.callbacks import MonitorCheckpoint, \
 
 from torch.utils.data import DataLoader
 
-from src.datasets import FreesoundDataset, FreesoundNoisyDataset, RandomDataset
+from src.datasets import FreesoundDataset, FreesoundNoisyDataset,\
+    SmallConcatDataset, RandomDataset
 from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
@@ -22,8 +23,10 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.2
+SMALL_CONCAT_PROB = 0.4
 MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
+MAX_PATCH_SIZE = 128
 CORRECTIONS = True
 if config.kernel:
     NUM_WORKERS = 2
@@ -34,7 +37,7 @@ PARAMS = {
     'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.4,
+        'dropout': 0.33,
         'ratio': 16,
         'kernel_size': 7,
         'last_filters': 8,
@@ -67,7 +70,7 @@ def train_fold(save_dir, train_folds, val_folds,
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
         AddMixer(alpha_dist='uniform')
-    ], p=[0.6, 0.4])
+    ], p=[0.3, 0.7])
     mixer = UseMixerWithProb(mixer, prob=MIXER_PROB)
 
     curated_dataset = FreesoundDataset(folds_data, train_folds,
@@ -76,8 +79,14 @@ def train_fold(save_dir, train_folds, val_folds,
     noisy_dataset = FreesoundNoisyDataset(noisy_data,
                                           transform=train_transfrom,
                                           mixer=mixer)
-    train_dataset = RandomDataset([noisy_dataset, curated_dataset],
-                                  p=[NOISY_PROB, 1 - NOISY_PROB],
+    small_cat_mixer = UseMixerWithProb(AddMixer(alpha_dist='uniform'))
+    small_cat_dataset = SmallConcatDataset(folds_data, train_folds,
+                                           max_patch_size=MAX_PATCH_SIZE,
+                                           max_size=CROP_SIZE,
+                                           transform=train_transfrom,
+                                           mixer=small_cat_mixer)
+    train_dataset = RandomDataset([noisy_dataset, small_cat_dataset, curated_dataset],
+                                  p=[NOISY_PROB, SMALL_CONCAT_PROB, 1 - NOISY_PROB - SMALL_CONCAT_PROB],
                                   size=DATASET_SIZE)
 
     val_dataset = FreesoundDataset(folds_data, val_folds,
