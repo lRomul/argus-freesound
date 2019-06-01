@@ -10,6 +10,7 @@ from src.models.simple_kaggle import SimpleKaggle
 from src.models.simple_attention import SimpleAttention
 from src.models.skip_attention import SkipAttention
 from src.models.aux_skip_attention import AuxSkipAttention
+from src.models.aux_skip_multi_attention import AuxSkipMultiAttention
 from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss, BCEMaxOutlierLoss
 from src import config
 
@@ -23,7 +24,8 @@ class FreesoundModel(Model):
         'se_resnext50_32x4d': senet.se_resnext50_32x4d,
         'SimpleAttention': SimpleAttention,
         'SkipAttention': SkipAttention,
-        'AuxSkipAttention': AuxSkipAttention
+        'AuxSkipAttention': AuxSkipAttention,
+        'AuxSkipMultiAttention': AuxSkipMultiAttention
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
