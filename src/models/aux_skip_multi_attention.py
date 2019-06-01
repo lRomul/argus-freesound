@@ -151,9 +151,6 @@ class AuxSkipMultiAttention(nn.Module):
         self.conv4 = ConvBlock(in_channels=base_size*4, out_channels=base_size*8)
 
         self.merge = SkipBlock(base_size*8*4, base_size*last_filters, 1)
-        self.attention = ConvolutionalBlockAttentionModule(base_size*last_filters,
-                                                           ratio=ratio,
-                                                           kernel_size=kernel_size)
 
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
 
@@ -194,7 +191,6 @@ class AuxSkipMultiAttention(nn.Module):
         x = torch.cat([skip4, skip1, skip2, skip3], dim=1)
 
         x = self.merge(x)
-        x = self.attention(x)
 
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
