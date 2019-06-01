@@ -123,10 +123,11 @@ class AuxBlock(nn.Module):
 
     def forward(self, x):
         x = self.attention(x)
+        skip = x
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        return x
+        return x, skip
 
 
 class AuxSkipMultiAttention(nn.Module):
@@ -149,10 +150,10 @@ class AuxSkipMultiAttention(nn.Module):
 
         self.conv4 = ConvBlock(in_channels=base_size*4, out_channels=base_size*8)
 
-        self.attention = ConvolutionalBlockAttentionModule(base_size*8*4,
+        self.merge = SkipBlock(base_size*8*4, base_size*last_filters, 1)
+        self.attention = ConvolutionalBlockAttentionModule(base_size*last_filters,
                                                            ratio=ratio,
                                                            kernel_size=kernel_size)
-        self.merge = SkipBlock(base_size*8*4, base_size*last_filters, 1)
 
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
 
@@ -171,28 +172,31 @@ class AuxSkipMultiAttention(nn.Module):
                              dropout, ratio, kernel_size)
         self.aux3 = AuxBlock(last_fc, num_classes, base_size,
                              dropout, ratio, kernel_size)
+        self.aux4 = AuxBlock(last_fc, num_classes, base_size,
+                             dropout, ratio, kernel_size)
 
     def forward(self, x):
         x = self.conv1(x)
         skip1 = self.skip1(x)
-        aux1 = self.aux1(skip1)
+        aux1, skip1 = self.aux1(skip1)
 
         x = self.conv2(x)
         skip2 = self.skip2(x)
-        aux2 = self.aux2(skip2)
+        aux2, skip2 = self.aux2(skip2)
 
         x = self.conv3(x)
         skip3 = self.skip3(x)
-        aux3 = self.aux3(skip3)
+        aux3, skip3 = self.aux3(skip3)
 
         x = self.conv4(x)
+        aux4, skip4 = self.aux4(x)
 
-        x = torch.cat([x, skip1, skip2, skip3], dim=1)
+        x = torch.cat([skip4, skip1, skip2, skip3], dim=1)
 
-        x = self.attention(x)
         x = self.merge(x)
+        x = self.attention(x)
 
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        return x, aux3, aux2, aux1
+        return x, aux4, aux3, aux2, aux1

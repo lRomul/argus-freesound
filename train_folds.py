@@ -48,7 +48,7 @@ PARAMS = {
     'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
     'aux': {
-        'weights': [1.0, 0.4, 0.2, 0.1]
+        'weights': [1.0, 0.4, 0.3, 0.2, 0.1]
     },
     'amp': {
         'opt_level': 'O2',
