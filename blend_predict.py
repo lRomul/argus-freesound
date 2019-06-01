@@ -10,8 +10,8 @@ from src import config
 
 EXPERIMENTS = [
     'auxiliary_011',
-    'auxiliary_013',
-    'auxiliary_014'
+    'auxiliary_014',
+    'auxiliary_016'
 ]
 
 DEVICE = 'cuda'
