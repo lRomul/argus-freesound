@@ -14,15 +14,14 @@ from src.stacking.predictor import StackPredictor
 NAME = "stacking_001"
 
 EXPERIMENTS = [
-    'corrections_005',
-    'corrections_006',
-    'auxiliary_001'
+    'auxiliary_007',
+    'auxiliary_010',
+    'auxiliary_012',
+    'auxiliary_014'
 ]
 
 STACKING_EXPERIMENTS = [
-    'fcnet_stacking_001',
-    'fcnet_stacking_002',
-    'fcnet_stacking_003'
+    'fcnet_stacking_004',
 ]
 
 DEVICE = 'cuda'
@@ -109,7 +108,7 @@ if __name__ == "__main__":
         stack_pred = stacking_pred(experiment_dir, stack_probs)
         stack_pred_lst.append(stack_pred)
 
-    stack_pred = gmean(stack_pred_lst, axis=0)
+    stack_pred = gmean(exp_pred_lst + stack_pred_lst, axis=0)
 
     stack_pred_df = pd.DataFrame(data=stack_pred,
                                  index=fname_lst,

@@ -17,9 +17,10 @@ parser.add_argument('--experiment', required=True, type=str)
 args = parser.parse_args()
 
 EXPERIMENTS = [
-    'corrections_005',
-    'corrections_006',
-    'auxiliary_001'
+    'auxiliary_007',
+    'auxiliary_010',
+    'auxiliary_012',
+    'auxiliary_014'
 ]
 BATCH_SIZE = 32
 DATASET_SIZE = 128 * 256
@@ -35,10 +36,10 @@ PARAMS = {
         'num_classes': len(config.classes),
         'base_size': 256,
         'reduction_scale': 4,
-        'p_dropout': 0.04549876782925022
+        'p_dropout': 0.06303391930169855
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 8.81298399933012e-05}),
+    'optimizer': ('Adam', {'lr': 6.41972773090878e-05}),
     'device': 'cuda',
 }
 
@@ -61,10 +62,10 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
         ReduceLROnPlateau(monitor='val_lwlrap',
-                          patience=10,
-                          factor=0.7843733841750502,
+                          patience=5,
+                          factor=0.6644578098312048,
                           min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=24),
+        EarlyStopping(monitor='val_lwlrap', patience=12),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
