@@ -15,31 +15,32 @@ from src.stacking.transforms import get_transforms
 from src.stacking.argus_models import StackingModel
 from src import config
 
-EXPERIMENT_NAME = 'fcnet_stacking_rs_001'
+EXPERIMENT_NAME = 'fcnet_stacking_rs_002'
 START_FROM = 0
 EXPERIMENTS = [
-    'corrections_005',
-    'corrections_006',
-    'auxiliary_001'
+    'auxiliary_007',
+    'auxiliary_010',
+    'auxiliary_012',
+    'auxiliary_014'
 ]
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
 if config.kernel:
     NUM_WORKERS = 2
 else:
-    NUM_WORKERS = 8
+    NUM_WORKERS = 4
 SAVE_DIR = config.experiments_dir / EXPERIMENT_NAME
 
 
 def train_folds(save_dir, folds_data):
     random_params = {
-        'base_size': int(np.random.choice([32, 64, 128, 256])),
-        'reduction_scale': int(np.random.choice([4, 8, 16, 32])),
-        'p_dropout': float(np.random.uniform(0.0, 0.5)),
-        'lr': float(np.random.uniform(0.003, 0.00003)),
-        'patience': int(np.random.randint(3, 30)),
+        'base_size': int(np.random.choice([128, 256, 512])),
+        'reduction_scale': int(np.random.choice([2, 4, 8])),
+        'p_dropout': float(np.random.uniform(0.0, 0.1)),
+        'lr': float(np.random.uniform(0.0001, 0.00001)),
+        'patience': int(np.random.randint(3, 20)),
         'factor': float(np.random.uniform(0.5, 0.8)),
-        'batch_size': int(np.random.choice([32, 64, 128, 256])),
+        'batch_size': int(np.random.choice([16, 32, 64])),
     }
     pprint(random_params)
 
