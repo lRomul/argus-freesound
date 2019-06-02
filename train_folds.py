@@ -62,7 +62,14 @@ def train_fold(save_dir, train_folds, val_folds,
                folds_data, noisy_data):
     train_transfrom = get_transforms(train=True,
                                      size=CROP_SIZE,
-                                     wrap_pad_prob=WRAP_PAD_PROB)
+                                     wrap_pad_prob=WRAP_PAD_PROB,
+                                     resize_scale=(0.75, 1.0),
+                                     resize_ratio=(1.6, 2.4),
+                                     resize_prob=0.33,
+                                     spec_num_mask=2,
+                                     spec_freq_masking=0.15,
+                                     spec_time_masking=0.20,
+                                     spec_prob=0.5)
 
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
