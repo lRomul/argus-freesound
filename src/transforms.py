@@ -208,7 +208,15 @@ class PadToSize:
         return signal
 
 
-def get_transforms(train, size, wrap_pad_prob=0.5):
+def get_transforms(train, size,
+                   wrap_pad_prob=0.5,
+                   resize_scale=(0.8, 1.0),
+                   resize_ratio=(1.7, 2.3),
+                   resize_prob=0.33,
+                   spec_num_mask=2,
+                   spec_freq_masking=0.15,
+                   spec_time_masking=0.20,
+                   spec_prob=0.5):
     if train:
         transforms = Compose([
             OneOf([
@@ -216,16 +224,13 @@ def get_transforms(train, size, wrap_pad_prob=0.5):
                 PadToSize(size, mode='constant'),
             ], p=[wrap_pad_prob, 1 - wrap_pad_prob]),
             RandomCrop(size),
-            # UseWithProb(HorizontalFlip(), 0.25),
-            # UseWithProb(RandomGaussianBlur(max_ksize=5, sigma_x=20), 0.1),
             UseWithProb(
-                RandomResizedCrop(scale=(0.8, 1.0), ratio=(1.7, 2.3)),
-                prob=0.33
+                RandomResizedCrop(scale=resize_scale, ratio=resize_ratio),
+                prob=resize_prob
             ),
-            UseWithProb(SpecAugment(num_mask=2,
-                                    freq_masking=0.15,
-                                    time_masking=0.20), 0.5),
-            # UseWithProb(GaussNoise(4.0), 0.2),
+            UseWithProb(SpecAugment(num_mask=spec_num_mask,
+                                    freq_masking=spec_freq_masking,
+                                    time_masking=spec_time_masking), spec_prob),
             ImageToTensor()
         ])
     else:
