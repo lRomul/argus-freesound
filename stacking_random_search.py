@@ -40,7 +40,7 @@ def train_folds(save_dir, folds_data):
         'lr': float(np.random.uniform(0.0001, 0.00001)),
         'patience': int(np.random.randint(3, 20)),
         'factor': float(np.random.uniform(0.5, 0.8)),
-        'batch_size': int(np.random.choice([16, 32, 64])),
+        'batch_size': int(np.random.choice([32, 64, 128])),
     }
     pprint(random_params)
 
