@@ -38,10 +38,10 @@ class FCNet(nn.Module):
         x = self.linear1(x)
         x = self.relu1(x)
         if self.p_dropout is not None:
-            x = F.dropout(x, p=self.p_dropout)
+            x = F.dropout(x, p=self.p_dropout, training=self.training)
         x = self.linear2(x)
         x = self.relu2(x)
         if self.p_dropout is not None:
-            x = F.dropout(x, p=self.p_dropout)
+            x = F.dropout(x, p=self.p_dropout, training=self.training)
         x = self.fc(x)
         return x
