@@ -15,7 +15,7 @@ from src.stacking.transforms import get_transforms
 from src.stacking.argus_models import StackingModel
 from src import config
 
-EXPERIMENT_NAME = 'fcnet_stacking_rs_002'
+EXPERIMENT_NAME = 'fcnet_stacking_rs_003'
 START_FROM = 0
 EXPERIMENTS = [
     'auxiliary_007',
@@ -36,7 +36,7 @@ def train_folds(save_dir, folds_data):
     random_params = {
         'base_size': int(np.random.choice([128, 256, 512])),
         'reduction_scale': int(np.random.choice([2, 4, 8])),
-        'p_dropout': float(np.random.uniform(0.0, 0.1)),
+        'p_dropout': float(np.random.uniform(0.0, 0.5)),
         'lr': float(np.random.uniform(0.0001, 0.00001)),
         'patience': int(np.random.randint(3, 20)),
         'factor': float(np.random.uniform(0.5, 0.8)),
