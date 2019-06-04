@@ -41,7 +41,7 @@ PARAMS = {
         'last_fc': 4
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
-        'beta': 0.8,
+        'beta': 0.6,
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
