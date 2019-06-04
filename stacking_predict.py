@@ -11,7 +11,7 @@ from src import config
 from src.stacking.predictor import StackPredictor
 
 
-NAME = "stacking_002"
+NAME = "stacking_003"
 
 EXPERIMENTS = [
     'auxiliary_007',
@@ -22,6 +22,7 @@ EXPERIMENTS = [
 
 STACKING_EXPERIMENTS = [
     'fcnet_stacking_005',
+    'fcnet_stacking_006'
 ]
 
 DEVICE = 'cuda'
