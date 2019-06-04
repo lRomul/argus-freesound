@@ -8,7 +8,8 @@ from src.metrics import LwlrapBase
 from src.utils import get_best_model_path
 from src import config
 
-STACKING_EXPERIMENT = "fcnet_stacking_005"
+
+STACKING_EXPERIMENT = "fcnet_stacking_006"
 
 EXPERIMENTS = [
     'auxiliary_007',

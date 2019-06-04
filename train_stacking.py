@@ -1,5 +1,4 @@
 import json
-import argparse
 
 from argus.callbacks import MonitorCheckpoint, \
     EarlyStopping, LoggingToFile, ReduceLROnPlateau
@@ -12,9 +11,7 @@ from src.stacking.argus_models import StackingModel
 from src import config
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--experiment', required=True, type=str)
-args = parser.parse_args()
+STACKING_EXPERIMENT = "fcnet_stacking_006"
 
 EXPERIMENTS = [
     'auxiliary_007',
@@ -29,7 +26,7 @@ if config.kernel:
     NUM_WORKERS = 2
 else:
     NUM_WORKERS = 8
-SAVE_DIR = config.experiments_dir / args.experiment
+SAVE_DIR = config.experiments_dir / STACKING_EXPERIMENT
 PARAMS = {
     'nn_module': ('FCNet', {
         'in_channels': len(config.classes) * len(EXPERIMENTS),
