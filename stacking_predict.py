@@ -22,7 +22,8 @@ EXPERIMENTS = [
 ]
 
 STACKING_EXPERIMENTS = [
-    'fcnet_stacking_007'
+    'fcnet_stacking_007',
+    'fcnet_stacking_008'
 ]
 
 DEVICE = 'cuda'

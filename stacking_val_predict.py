@@ -9,7 +9,7 @@ from src.utils import get_best_model_path
 from src import config
 
 
-STACKING_EXPERIMENT = "fcnet_stacking_007"
+STACKING_EXPERIMENT = "fcnet_stacking_008"
 
 EXPERIMENTS = [
     'auxiliary_001',

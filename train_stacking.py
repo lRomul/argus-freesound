@@ -11,7 +11,7 @@ from src.stacking.argus_models import StackingModel
 from src import config
 
 
-STACKING_EXPERIMENT = "fcnet_stacking_007"
+STACKING_EXPERIMENT = "fcnet_stacking_008"
 
 EXPERIMENTS = [
     'auxiliary_001',
@@ -20,7 +20,7 @@ EXPERIMENTS = [
     'rnn_aux_skip_attention_001',
     'small_cat_002'
 ]
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
 if config.kernel:
@@ -32,12 +32,12 @@ PARAMS = {
     'nn_module': ('FCNet', {
         'in_channels': len(config.classes) * len(EXPERIMENTS),
         'num_classes': len(config.classes),
-        'base_size': 512,
-        'reduction_scale': 2,
-        'p_dropout': 0.48357033916143033
+        'base_size': 128,
+        'reduction_scale': 8,
+        'p_dropout': 0.0672975379266802
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 3.897529465275052e-05}),
+    'optimizer': ('Adam', {'lr': 5.2425545147244065e-05}),
     'device': 'cuda',
 }
 
