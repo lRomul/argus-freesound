@@ -11,13 +11,14 @@ from src.stacking.argus_models import StackingModel
 from src import config
 
 
-STACKING_EXPERIMENT = "fcnet_stacking_006"
+STACKING_EXPERIMENT = "fcnet_stacking_007"
 
 EXPERIMENTS = [
-    'auxiliary_007',
-    'auxiliary_010',
+    'auxiliary_001',
     'auxiliary_012',
-    'auxiliary_014'
+    'auxiliary_014',
+    'rnn_aux_skip_attention_001',
+    'small_cat_002'
 ]
 BATCH_SIZE = 128
 DATASET_SIZE = 128 * 256
@@ -62,7 +63,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
                           patience=9,
                           factor=0.7953702239306087,
                           min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=50),
+        EarlyStopping(monitor='val_lwlrap', patience=20),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 
