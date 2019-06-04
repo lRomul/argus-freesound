@@ -33,8 +33,8 @@ SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
-        'base_size': 32,
-        'dropout': 0.2,
+        'base_size': 16,
+        'dropout': 0.1,
         'ratio': 16,
         'kernel_size': 7,
         'last_filters': 8,
