@@ -30,6 +30,7 @@ DEVICE = 'cuda'
 CROP_SIZE = 256
 BATCH_SIZE = 16
 STACK_BATCH_SIZE = 256
+TILE_STEP = 2
 
 
 def pred_test(predictor, images_lst):
@@ -57,7 +58,7 @@ def experiment_pred(experiment_dir, images_lst):
         predictor = Predictor(model_path, transforms,
                               BATCH_SIZE,
                               (config.audio.n_mels, CROP_SIZE),
-                              (config.audio.n_mels, CROP_SIZE//4),
+                              (config.audio.n_mels, CROP_SIZE//TILE_STEP),
                               device=DEVICE)
 
         pred = pred_test(predictor, images_lst)
