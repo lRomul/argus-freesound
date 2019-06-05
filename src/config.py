@@ -48,6 +48,7 @@ else:
     experiments_dir = save_data_dir / 'experiments'
 
 folds_data_pkl_dir = save_data_dir / 'folds_data'
+spec_meta_info_dir = save_data_dir / 'spec_meta_info'
 augment_folds_data_pkl_dir = save_data_dir / 'augment_folds_data'
 noisy_data_pkl_dir = save_data_dir / 'noisy_data'
 corrections_json_path = Path('/workdir/corrections.json')

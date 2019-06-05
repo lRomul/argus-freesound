@@ -1,6 +1,5 @@
 import time
 import torch
-import random
 import numpy as np
 import pandas as pd
 
@@ -16,7 +15,7 @@ def load_fname_probs(experiments, fold, fname):
         prob = np.load(npy_path)
         prob_lst.append(prob)
     probs = np.concatenate(prob_lst, axis=1)
-    return probs
+    return probs.astype(np.float32)
 
 
 def get_out_of_folds_data(experiments, corrections=None):
@@ -48,23 +47,27 @@ def get_out_of_folds_data(experiments, corrections=None):
         targets_lst.append(target)
         fname_lst.append(row.fname)
 
-    return probs_lst, targets_lst, folds_lst
+    return probs_lst, targets_lst, folds_lst, fname_lst
 
 
 class StackingDataset(Dataset):
     def __init__(self, folds_data, folds,
-                 transform=None, size=None):
+                 transform=None, size=None,
+                 spec_meta_info=None):
         super().__init__()
         self.folds = folds
         self.transform = transform
         self.size = size
+        self.spec_meta_info = spec_meta_info
 
         self.probs_lst = []
         self.targets_lst = []
-        for prob, trg, fold in zip(*folds_data):
+        self.fname_lst = []
+        for prob, trg, fold, fname in zip(*folds_data):
             if fold in folds:
                 self.probs_lst.append(prob)
                 self.targets_lst.append(trg)
+                self.fname_lst.append(fname)
 
     def __len__(self):
         if self.size is None:
@@ -83,5 +86,11 @@ class StackingDataset(Dataset):
 
         if self.transform is not None:
             probs = self.transform(probs)
+
+        if self.spec_meta_info is not None:
+            fname = self.fname_lst[idx]
+            spec_meta = self.spec_meta_info[fname]
+            spec_meta = torch.from_numpy(spec_meta.astype(np.float32))
+            probs = torch.cat([probs, spec_meta], dim=0)
 
         return probs, target

@@ -63,7 +63,7 @@ class Flatten:
 
 class ToTensor:
     def __call__(self, probs):
-        probs = torch.from_numpy(probs)
+        probs = torch.from_numpy(probs.astype(np.float32))
         return probs
 
 
