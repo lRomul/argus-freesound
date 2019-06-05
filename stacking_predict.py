@@ -94,6 +94,7 @@ if __name__ == "__main__":
     print("Crop size", CROP_SIZE)
     print("Batch size", BATCH_SIZE)
     print("Stacking batch size", STACK_BATCH_SIZE)
+    print("Tile step", TILE_STEP)
 
     fname_lst, images_lst = get_test_data()
 
