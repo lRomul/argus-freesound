@@ -22,7 +22,6 @@ def run(command):
               f'export MODE={KERNEL_MODE} && ' + command)
 
 
-run('cd argus && python setup.py install && cd .. && rm -rf argus')
 run('python make_folds.py')
 run('python blend_predict.py')
-run('rm -rf src')
+run('rm -rf argus src')

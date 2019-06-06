@@ -28,9 +28,11 @@ def check_ignore(path: Path, ignore_list):
 
 def clone_package(git_url):
     name = Path(git_url).stem
-    os.system(f'rm -rf {name}')
-    os.system(f'git clone {git_url}')
-    os.system(f'rm -rf {name}/.git')
+    os.system('mkdir -p tmp')
+    os.system(f'rm -rf tmp/{name}')
+    os.system(f'cd tmp && git clone {git_url}')
+    os.system(f'cp -R tmp/{name}/{name} .')
+    os.system(f'rm -rf tmp/{name}')
 
 
 def build_script(ignore_list, packages, template_name='kernel_template.py'):
