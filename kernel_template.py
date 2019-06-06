@@ -23,10 +23,9 @@ def run(command):
               f'export MODE={KERNEL_MODE} && ' + command)
 
 
-run('cd argus && python setup.py install && cd .. && rm -rf argus')
 run('python make_folds.py')
 if KERNEL_MODE == "train":
     run(f'python train_folds.py --experiment {EXPERIMENT_NAME}')
 else:
     run(f'python predict_folds.py --experiment {EXPERIMENT_NAME}')
-run('rm -rf src')
+run('rm -rf argus src')

@@ -22,6 +22,5 @@ def run(command):
               f'export MODE={KERNEL_MODE} && ' + command)
 
 
-run('cd argus && python setup.py install && cd .. && rm -rf argus')
 run('python stacking_predict.py')
-run('rm -rf src')
+run('rm -rf argus src')
