@@ -41,7 +41,7 @@ PARAMS = {
         'last_fc': 4
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
-        'beta': 0.6,
+        'beta': 0.7,
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
@@ -66,9 +66,9 @@ def train_fold(save_dir, train_folds, val_folds,
                                      resize_scale=(0.8, 1.0),
                                      resize_ratio=(1.7, 2.3),
                                      resize_prob=0.33,
-                                     spec_num_mask=2,
-                                     spec_freq_masking=0.15,
-                                     spec_time_masking=0.20,
+                                     spec_num_mask=4,
+                                     spec_freq_masking=0.075,
+                                     spec_time_masking=0.1,
                                      spec_prob=0.5)
 
     mixer = RandomMixer([
