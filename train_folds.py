@@ -23,7 +23,7 @@ CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.2
 MIXER_PROB = 0.8
-WRAP_PAD_PROB = 0.8
+WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
 if config.kernel:
     NUM_WORKERS = 2
@@ -45,7 +45,7 @@ PARAMS = {
         'noisy_weight': 0.5,
         'curated_weight': 0.5
     }),
-    'optimizer': ('Adam', {'lr': 0.0009}),
+    'optimizer': ('Adam', {'lr': 0.0018}),
     'device': 'cuda',
     'aux': {
         'weights': [1.0, 0.4, 0.2, 0.1]
