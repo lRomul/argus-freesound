@@ -9,19 +9,21 @@ from src.utils import get_best_model_path
 from src import config
 
 
-STACKING_EXPERIMENT = "fcnet_stacking_008"
+STACKING_EXPERIMENT = "stacking_005_fcnet_0005"
 
 EXPERIMENTS = [
-    'auxiliary_001',
+    'auxiliary_004',
+    'auxiliary_007',
     'auxiliary_012',
     'auxiliary_014',
-    'rnn_aux_skip_attention_001',
-    'small_cat_002'
+    'auxiliary_017',
+    'auxiliary_019',
+    'rnn_aux_skip_attention_001'
 ]
 
 EXPERIMENT_DIR = config.experiments_dir / STACKING_EXPERIMENT
 PREDICTION_DIR = config.predictions_dir / STACKING_EXPERIMENT
-DEVICE = 'cpu'
+DEVICE = 'cuda'
 BATCH_SIZE = 256
 
 
