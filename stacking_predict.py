@@ -11,16 +11,16 @@ from src import config
 from src.stacking.predictor import StackPredictor
 
 
-NAME = "stacking_005"
+NAME = "stacking_005_without_blend_rnn"
 
 EXPERIMENTS = [
-    'auxiliary_004',
-    'auxiliary_007',
-    'auxiliary_012',
-    'auxiliary_014',
-    'auxiliary_017',
-    'auxiliary_019',
-    'rnn_aux_skip_attention_001'
+    ('auxiliary_004', True),
+    ('auxiliary_007', True),
+    ('auxiliary_012', True),
+    ('auxiliary_014', True),
+    ('auxiliary_017', True),
+    ('auxiliary_019', True),
+    ('rnn_aux_skip_attention_001', False)
 ]
 
 STACKING_EXPERIMENTS = [
@@ -103,10 +103,13 @@ if __name__ == "__main__":
     fname_lst, images_lst = get_test_data()
 
     exp_pred_lst = []
-    for experiment in EXPERIMENTS:
+    blend_pred_lst = []
+    for experiment, blend in EXPERIMENTS:
         experiment_dir = config.experiments_dir / experiment
         exp_pred = experiment_pred(experiment_dir, images_lst)
         exp_pred_lst.append(exp_pred)
+        if blend:
+            blend_pred_lst.append(exp_pred)
 
     stack_probs = np.concatenate(exp_pred_lst, axis=1)
 
@@ -116,7 +119,9 @@ if __name__ == "__main__":
         stack_pred = stacking_pred(experiment_dir, stack_probs)
         stack_pred_lst.append(stack_pred)
 
-    stack_pred = gmean(exp_pred_lst + stack_pred_lst, axis=0)
+    blend_pred_lst = blend_pred_lst + stack_pred_lst
+    print("blend_pred_lst len", len(blend_pred_lst))
+    stack_pred = gmean(blend_pred_lst, axis=0)
 
     stack_pred_df = pd.DataFrame(data=stack_pred,
                                  index=fname_lst,
