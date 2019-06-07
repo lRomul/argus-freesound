@@ -33,7 +33,7 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('AuxSkipAttention', {
+    'nn_module': ('RnnAuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
         'dropout': 0.4,
