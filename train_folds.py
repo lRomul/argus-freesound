@@ -7,6 +7,7 @@ from argus.callbacks import MonitorCheckpoint, \
 from torch.utils.data import DataLoader
 
 from src.datasets import FreesoundDataset, FreesoundNoisyDataset, RandomDataset
+from src.datasets import get_corrected_noisy_data, FreesoundCorrectedNoisyDataset
 from src.mixers import RandomMixer, AddMixer, SigmoidConcatMixer, UseMixerWithProb
 from src.transforms import get_transforms
 from src.argus_models import FreesoundModel
@@ -21,7 +22,8 @@ args = parser.parse_args()
 BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
-NOISY_PROB = 0.2
+NOISY_PROB = 0.07
+CORR_NOISY_PROB = 0.33
 MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
@@ -33,8 +35,8 @@ SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
-        'base_size': 16,
-        'dropout': 0.1,
+        'base_size': 64,
+        'dropout': 0.4,
         'ratio': 16,
         'kernel_size': 7,
         'last_filters': 8,
@@ -59,7 +61,7 @@ PARAMS = {
 
 
 def train_fold(save_dir, train_folds, val_folds,
-               folds_data, noisy_data):
+               folds_data, noisy_data, corrected_noisy_data):
     train_transfrom = get_transforms(train=True,
                                      size=CROP_SIZE,
                                      wrap_pad_prob=WRAP_PAD_PROB,
@@ -83,8 +85,13 @@ def train_fold(save_dir, train_folds, val_folds,
     noisy_dataset = FreesoundNoisyDataset(noisy_data,
                                           transform=train_transfrom,
                                           mixer=mixer)
-    train_dataset = RandomDataset([noisy_dataset, curated_dataset],
-                                  p=[NOISY_PROB, 1 - NOISY_PROB],
+    corr_noisy_dataset = FreesoundCorrectedNoisyDataset(corrected_noisy_data,
+                                                        transform=train_transfrom,
+                                                        mixer=mixer)
+    dataset_probs = [NOISY_PROB, CORR_NOISY_PROB, 1 - NOISY_PROB - CORR_NOISY_PROB]
+    print("Dataset probs", dataset_probs)
+    train_dataset = RandomDataset([noisy_dataset, corr_noisy_dataset, curated_dataset],
+                                  p=dataset_probs,
                                   size=DATASET_SIZE)
 
     val_dataset = FreesoundDataset(folds_data, val_folds,
@@ -126,6 +133,7 @@ if __name__ == "__main__":
 
     folds_data = load_folds_data(use_corrections=CORRECTIONS)
     noisy_data = load_noisy_data()
+    corrected_noisy_data = get_corrected_noisy_data()
 
     for fold in config.folds:
         val_folds = [fold]
@@ -134,4 +142,4 @@ if __name__ == "__main__":
         print(f"Val folds: {val_folds}, Train folds: {train_folds}")
         print(f"Fold save dir {save_fold_dir}")
         train_fold(save_fold_dir, train_folds, val_folds,
-                   folds_data, noisy_data)
+                   folds_data, noisy_data, corrected_noisy_data)

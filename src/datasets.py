@@ -1,3 +1,4 @@
+import json
 import time
 import torch
 import random
@@ -235,3 +236,68 @@ class RandomDataset(Dataset):
         dataset = self.datasets[dataset_idx]
         idx = random.randint(0, len(dataset) - 1)
         return dataset[idx]
+
+
+def get_corrected_noisy_data():
+    print("Start generate corrected noisy data")
+    print("Audio config", get_audio_config())
+    train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
+
+    with open(config.noisy_corrections_json_path) as file:
+        corrections = json.load(file)
+
+    audio_paths_lst = []
+    targets_lst = []
+    for i, row in train_noisy_df.iterrows():
+        labels = row.labels
+
+        if row.fname in corrections:
+            action = corrections[row.fname]
+            if action == 'remove':
+                continue
+            else:
+                labels = action
+        else:
+            continue
+
+        audio_paths_lst.append(config.train_noisy_dir / row.fname)
+        target = torch.zeros(len(config.classes))
+
+        for label in labels.split(','):
+            target[config.class2index[label]] = 1.
+        targets_lst.append(target)
+
+    with mp.Pool(N_WORKERS) as pool:
+        images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
+
+    return images_lst, targets_lst
+
+
+class FreesoundCorrectedNoisyDataset(Dataset):
+    def __init__(self, noisy_data, transform=None,
+                 mixer=None):
+        super().__init__()
+        self.transform = transform
+        self.mixer = mixer
+
+        self.images_lst = []
+        self.targets_lst = []
+        for img, trg in zip(*noisy_data):
+            self.images_lst.append(img)
+            self.targets_lst.append(trg)
+
+    def __len__(self):
+        return len(self.images_lst)
+
+    def __getitem__(self, idx):
+        image = self.images_lst[idx].copy()
+        target = self.targets_lst[idx].clone()
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        if self.mixer is not None:
+            image, target = self.mixer(self, image, target)
+
+        noisy = torch.tensor(0, dtype=torch.uint8)
+        return image, target, noisy
