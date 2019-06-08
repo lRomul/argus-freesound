@@ -11,16 +11,18 @@ from src.stacking.argus_models import StackingModel
 from src import config
 
 
-STACKING_EXPERIMENT = "fcnet_stacking_008"
+STACKING_EXPERIMENT = "stacking_006_fcnet_45041"
 
 EXPERIMENTS = [
     'auxiliary_001',
     'auxiliary_012',
-    'auxiliary_014',
-    'rnn_aux_skip_attention_001',
-    'small_cat_002'
+    'corrections_002',
+    'corr_noisy_001',
+    'corr_noisy_002'
 ]
-BATCH_SIZE = 64
+RS_PARAMS = {"base_size": 512, "reduction_scale": 2, "p_dropout": 0.48357033916143033, "lr": 3.897529465275052e-05,
+             "patience": 9, "factor": 0.7953702239306087, "batch_size": 128}
+BATCH_SIZE = RS_PARAMS['batch_size']
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
 if config.kernel:
@@ -32,12 +34,12 @@ PARAMS = {
     'nn_module': ('FCNet', {
         'in_channels': len(config.classes) * len(EXPERIMENTS),
         'num_classes': len(config.classes),
-        'base_size': 128,
-        'reduction_scale': 8,
-        'p_dropout': 0.0672975379266802
+        'base_size': RS_PARAMS['base_size'],
+        'reduction_scale': RS_PARAMS['reduction_scale'],
+        'p_dropout': RS_PARAMS['p_dropout']
     }),
     'loss': 'BCEWithLogitsLoss',
-    'optimizer': ('Adam', {'lr': 5.2425545147244065e-05}),
+    'optimizer': ('Adam', {'lr': RS_PARAMS['lr']}),
     'device': 'cuda',
 }
 
@@ -60,8 +62,8 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
     callbacks = [
         MonitorCheckpoint(save_dir, monitor='val_lwlrap', max_saves=1),
         ReduceLROnPlateau(monitor='val_lwlrap',
-                          patience=9,
-                          factor=0.7953702239306087,
+                          patience=RS_PARAMS['patience'],
+                          factor=RS_PARAMS['factor'],
                           min_lr=1e-8),
         EarlyStopping(monitor='val_lwlrap', patience=20),
         LoggingToFile(save_dir / 'log.txt'),
