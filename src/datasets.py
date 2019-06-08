@@ -156,8 +156,6 @@ def get_noisy_data_generator():
                 continue
             else:
                 labels = action
-        else:
-            continue
 
         audio_paths_lst.append(config.train_noisy_dir / row.fname)
         target = torch.zeros(len(config.classes))

@@ -23,7 +23,7 @@ BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
 NOISY_PROB = 0.1
-CORR_NOISY_PROB = 0.2
+CORR_NOISY_PROB = 0.3
 MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
@@ -90,6 +90,7 @@ def train_fold(save_dir, train_folds, val_folds,
                                                         mixer=mixer)
     dataset_probs = [NOISY_PROB, CORR_NOISY_PROB, 1 - NOISY_PROB - CORR_NOISY_PROB]
     print("Dataset probs", dataset_probs)
+    print("Dataset lens", len(noisy_dataset), len(corr_noisy_dataset), len(curated_dataset))
     train_dataset = RandomDataset([noisy_dataset, corr_noisy_dataset, curated_dataset],
                                   p=dataset_probs,
                                   size=DATASET_SIZE)

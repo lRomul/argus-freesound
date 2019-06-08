@@ -88,7 +88,7 @@ def load_noisy_data():
             config.noisy_data_pkl_dir.mkdir(parents=True, exist_ok=True)
 
         for i, data_batch in enumerate(get_noisy_data_generator()):
-            pkl_name = f'{config.audio.get_hash()}_{i:02}.pkl'
+            pkl_name = f'{config.audio.get_hash(corrections=corrections)}_{i:02}.pkl'
             noisy_data_pkl_path = config.noisy_data_pkl_dir / pkl_name
             pickle_save(data_batch, noisy_data_pkl_path)
 
