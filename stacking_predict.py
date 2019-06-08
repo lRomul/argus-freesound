@@ -11,22 +11,35 @@ from src import config
 from src.stacking.predictor import StackPredictor
 
 
-NAME = "stacking_006"
+NAME = "blend_stacks_001"
 
 EXPERIMENTS = [
-    'auxiliary_001',
-    'auxiliary_012',
-    'corrections_002',
-    'corr_noisy_001',
-    'corr_noisy_002',
+    [
+        'auxiliary_001',
+        'auxiliary_012',
+        'auxiliary_014',
+        'rnn_aux_skip_attention_001',
+        'small_cat_002',
+    ],
+    [
+        'auxiliary_001',
+        'auxiliary_012',
+        'corrections_002',
+        'corr_noisy_001',
+        'corr_noisy_002',
+    ]
+]
+STACKING_EXPERIMENTS = [
+    [
+        'fcnet_stacking_007',
+        'fcnet_stacking_008'
+    ],
+    [
+        'stacking_006_fcnet_45041',
+        'stacking_006_fcnet_43040'
+    ]
 ]
 
-STACKING_EXPERIMENTS = [
-    'stacking_006_fcnet_45041',
-    'stacking_006_fcnet_43040',
-    'stacking_006_fcnet_16032',
-    'stacking_006_fcnet_50013'
-]
 
 DEVICE = 'cuda'
 CROP_SIZE = 256
@@ -88,6 +101,25 @@ def stacking_pred(experiment_dir, stack_probs):
     return preds
 
 
+def stacks_predict(experiments, stacking_experiments):
+    exp_pred_lst = []
+    for experiment in experiments:
+        experiment_dir = config.experiments_dir / experiment
+        exp_pred = experiment_pred(experiment_dir, images_lst)
+        exp_pred_lst.append(exp_pred)
+
+    stack_probs = np.concatenate(exp_pred_lst, axis=1)
+
+    stack_pred_lst = []
+    for experiment in stacking_experiments:
+        experiment_dir = config.experiments_dir / experiment
+        stack_pred = stacking_pred(experiment_dir, stack_probs)
+        stack_pred_lst.append(stack_pred)
+
+    stack_pred = gmean(exp_pred_lst + stack_pred_lst, axis=0)
+    return stack_pred
+
+
 if __name__ == "__main__":
     print("Name", NAME)
     print("Experiments", EXPERIMENTS)
@@ -100,23 +132,14 @@ if __name__ == "__main__":
 
     fname_lst, images_lst = get_test_data()
 
-    exp_pred_lst = []
-    for experiment in EXPERIMENTS:
-        experiment_dir = config.experiments_dir / experiment
-        exp_pred = experiment_pred(experiment_dir, images_lst)
-        exp_pred_lst.append(exp_pred)
+    stacks_pred_lst = []
+    for experiments, stacking_experiments in zip(EXPERIMENTS, STACKING_EXPERIMENTS):
+        stack_pred = stacks_predict(experiments, stacking_experiments)
+        stacks_pred_lst.append(stack_pred)
 
-    stack_probs = np.concatenate(exp_pred_lst, axis=1)
+    stacks_pred = gmean(stacks_pred_lst, axis=0)
 
-    stack_pred_lst = []
-    for experiment in STACKING_EXPERIMENTS:
-        experiment_dir = config.experiments_dir / experiment
-        stack_pred = stacking_pred(experiment_dir, stack_probs)
-        stack_pred_lst.append(stack_pred)
-
-    stack_pred = gmean(exp_pred_lst + stack_pred_lst, axis=0)
-
-    stack_pred_df = pd.DataFrame(data=stack_pred,
+    stack_pred_df = pd.DataFrame(data=stacks_pred,
                                  index=fname_lst,
                                  columns=config.classes)
     stack_pred_df.index.name = 'fname'
