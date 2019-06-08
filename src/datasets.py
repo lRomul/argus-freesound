@@ -137,37 +137,31 @@ class FreesoundDataset(Dataset):
         return image, target, noisy
 
 
-def get_noisy_data():
-    print("Start generate noisy data")
-    print("Audio config", get_audio_config())
-    train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
-
-    audio_paths_lst = []
-    targets_lst = []
-    for i, row in train_noisy_df.iterrows():
-        audio_paths_lst.append(config.train_noisy_dir / row.fname)
-        target = torch.zeros(len(config.classes))
-        for label in row.labels.split(','):
-            target[config.class2index[label]] = 1.
-        targets_lst.append(target)
-
-    with mp.Pool(N_WORKERS) as pool:
-        images_lst = pool.map(read_as_melspectrogram, audio_paths_lst)
-
-    return images_lst, targets_lst
-
-
 def get_noisy_data_generator():
     print("Start generate noisy data")
     print("Audio config", get_audio_config())
     train_noisy_df = pd.read_csv(config.train_noisy_csv_path)
 
+    with open(config.noisy_corrections_json_path) as file:
+        corrections = json.load(file)
+
     audio_paths_lst = []
     targets_lst = []
     for i, row in train_noisy_df.iterrows():
+        labels = row.labels
+
+        if row.fname in corrections:
+            action = corrections[row.fname]
+            if action == 'remove':
+                continue
+            else:
+                labels = action
+        else:
+            continue
+
         audio_paths_lst.append(config.train_noisy_dir / row.fname)
         target = torch.zeros(len(config.classes))
-        for label in row.labels.split(','):
+        for label in labels.split(','):
             target[config.class2index[label]] = 1.
         targets_lst.append(target)
 

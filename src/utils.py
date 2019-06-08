@@ -70,7 +70,10 @@ def load_folds_data(use_corrections=True):
 
 
 def load_noisy_data():
-    pkl_name_glob = f'{config.audio.get_hash()}_*.pkl'
+    with open(config.noisy_corrections_json_path) as file:
+        corrections = json.load(file)
+
+    pkl_name_glob = f'{config.audio.get_hash(corrections=corrections)}_*.pkl'
     pkl_paths = sorted(config.noisy_data_pkl_dir.glob(pkl_name_glob))
 
     images_lst, targets_lst = [], []

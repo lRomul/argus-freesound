@@ -22,8 +22,8 @@ args = parser.parse_args()
 BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
-NOISY_PROB = 0.1
-CORR_NOISY_PROB = 0.2
+NOISY_PROB = 0.07
+CORR_NOISY_PROB = 0.33
 MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
@@ -33,7 +33,7 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('RnnAuxSkipAttention', {
+    'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
         'dropout': 0.4,
