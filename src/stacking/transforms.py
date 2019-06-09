@@ -67,12 +67,19 @@ class ToTensor:
         return probs
 
 
+class RandomStrideCrop:
+    def __call__(self, signal):
+        size = random.randint(1, signal.shape[0])
+        indexes = np.random.choice(np.arange(0, signal.shape[0]),
+                                   size=size, replace=False)
+        return signal[indexes]
+
+
 def get_transforms(train):
     if train:
         transforms = Compose([
-            UseWithProb(Compose([
-                RandomSizedCrop()
-            ]), prob=0.5),
+            UseWithProb(RandomSizedCrop(), prob=0.5),
+            UseWithProb(RandomStrideCrop(), prob=0.5),
             MeanOverTime(),
             ToTensor()
         ])

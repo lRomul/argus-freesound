@@ -11,14 +11,16 @@ from src.stacking.argus_models import StackingModel
 from src import config
 
 
-STACKING_EXPERIMENT = "stacking_006_fcnet_43040"
+STACKING_EXPERIMENT = "stacking_007_fcnet_43040"
 
 EXPERIMENTS = [
     'auxiliary_001',
-    'auxiliary_012',
-    'corrections_002',
-    'corr_noisy_001',
-    'corr_noisy_002'
+    'auxiliary_007',
+    'auxiliary_014',
+    'auxiliary_017',
+    'small_cat_002',
+    'corr_noisy_003',
+    'corr_noisy_004'
 ]
 RS_PARAMS = {"base_size": 512, "reduction_scale": 16, "p_dropout": 0.0514108720891856, "lr": 4.5950585196710547e-05,
              "patience": 5, "factor": 0.657766056031002, "batch_size": 128}
@@ -65,7 +67,7 @@ def train_fold(save_dir, train_folds, val_folds, folds_data):
                           patience=RS_PARAMS['patience'],
                           factor=RS_PARAMS['factor'],
                           min_lr=1e-8),
-        EarlyStopping(monitor='val_lwlrap', patience=20),
+        EarlyStopping(monitor='val_lwlrap', patience=30),
         LoggingToFile(save_dir / 'log.txt'),
     ]
 

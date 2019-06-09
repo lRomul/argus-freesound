@@ -9,14 +9,16 @@ from src.utils import get_best_model_path
 from src import config
 
 
-STACKING_EXPERIMENT = "stacking_006_fcnet_43040"
+STACKING_EXPERIMENT = "stacking_007_fcnet_43040"
 
 EXPERIMENTS = [
     'auxiliary_001',
-    'auxiliary_012',
-    'corrections_002',
-    'corr_noisy_001',
-    'corr_noisy_002'
+    'auxiliary_007',
+    'auxiliary_014',
+    'auxiliary_017',
+    'small_cat_002',
+    'corr_noisy_003',
+    'corr_noisy_004'
 ]
 
 EXPERIMENT_DIR = config.experiments_dir / STACKING_EXPERIMENT
