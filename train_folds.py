@@ -22,8 +22,8 @@ args = parser.parse_args()
 BATCH_SIZE = 128
 CROP_SIZE = 256
 DATASET_SIZE = 128 * 256
-NOISY_PROB = 0.1
-CORR_NOISY_PROB = 0.2
+NOISY_PROB = 0.01
+CORR_NOISY_PROB = 0.42
 MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
@@ -33,7 +33,7 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('RnnAuxSkipAttention', {
+    'nn_module': ('AuxSkipAttention', {
         'num_classes': len(config.classes),
         'base_size': 64,
         'dropout': 0.4,
@@ -90,6 +90,7 @@ def train_fold(save_dir, train_folds, val_folds,
                                                         mixer=mixer)
     dataset_probs = [NOISY_PROB, CORR_NOISY_PROB, 1 - NOISY_PROB - CORR_NOISY_PROB]
     print("Dataset probs", dataset_probs)
+    print("Dataset lens", len(noisy_dataset), len(corr_noisy_dataset), len(curated_dataset))
     train_dataset = RandomDataset([noisy_dataset, corr_noisy_dataset, curated_dataset],
                                   p=dataset_probs,
                                   size=DATASET_SIZE)
