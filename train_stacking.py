@@ -11,7 +11,7 @@ from src.stacking.argus_models import StackingModel
 from src import config
 
 
-STACKING_EXPERIMENT = "stacking_009_fcnet_45041"
+STACKING_EXPERIMENT = "stacking_009_fcnet_40008"
 
 EXPERIMENTS = [
     'auxiliary_001',
@@ -22,8 +22,8 @@ EXPERIMENTS = [
     'corr_noisy_007',
     'small_cat_002'
 ]
-RS_PARAMS = {"base_size": 512, "reduction_scale": 2, "p_dropout": 0.48357033916143033, "lr": 3.897529465275052e-05,
-             "patience": 9, "factor": 0.7953702239306087, "batch_size": 128}
+RS_PARAMS = {"base_size": 512, "reduction_scale": 2, "p_dropout": 0.484270331410466, "lr": 2.1772491380747202e-05,
+             "patience": 11, "factor": 0.744938384516675, "batch_size": 32}
 BATCH_SIZE = RS_PARAMS['batch_size']
 DATASET_SIZE = 128 * 256
 CORRECTIONS = True
