@@ -63,7 +63,7 @@ def pred_test(predictor, images_lst):
             pred_dict[num].append(pred)
 
     pred_lst = []
-    for num in range(images_lst):
+    for num in range(len(images_lst)):
         pred = pred_dict[num]
         pred = np.stack(pred, axis=0)
         pred = pred.mean(axis=0)
