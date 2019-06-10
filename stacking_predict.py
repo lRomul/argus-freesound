@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 from scipy.stats.mstats import gmean
@@ -31,21 +32,44 @@ STACKING_EXPERIMENTS = [
 
 DEVICE = 'cuda'
 CROP_SIZE = 256
-BATCH_SIZE = 16
+BATCH_SIZE = 64
+LOADER_BATCH = BATCH_SIZE * 4
 STACK_BATCH_SIZE = 256
 TILE_STEP = 2
 
 
 def pred_test(predictor, images_lst):
-    pred_lst = []
-    for image in images_lst:
-        pred = predictor.predict(image)
 
+    tile_lst = []
+    num_lst = []
+    pred_dict = defaultdict(list)
+    for num, image in enumerate(images_lst):
+        tiles = predictor.tile_image(image)
+        for tile in tiles:
+            tile_lst.append(tile)
+            num_lst.append(num)
+
+        if len(tile_lst) > LOADER_BATCH:
+            proc_tile_lst, tile_lst = tile_lst[:LOADER_BATCH], tile_lst[LOADER_BATCH:]
+            proc_num_lst, num_lst = num_lst[:LOADER_BATCH], num_lst[LOADER_BATCH:]
+
+            preds = predictor.predict_tiles(proc_tile_lst)
+            for num, pred in zip(proc_num_lst, preds):
+                pred_dict[num].append(pred)
+
+    if tile_lst:
+        preds = predictor.predict_tiles(tile_lst)
+        for num, pred in zip(num_lst, preds):
+            pred_dict[num].append(pred)
+
+    pred_lst = []
+    for num in range(images_lst):
+        pred = pred_dict[num]
+        pred = np.stack(pred, axis=0)
         pred = pred.mean(axis=0)
         pred_lst.append(pred)
 
-    preds = np.stack(pred_lst, axis=0)
-    return preds
+    return np.stack(pred_lst, axis=0)
 
 
 def experiment_pred(experiment_dir, images_lst):

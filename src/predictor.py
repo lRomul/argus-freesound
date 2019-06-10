@@ -1,9 +1,13 @@
+import multiprocessing as mp
 import torch
 from torch.utils.data import DataLoader
 
 from argus import load_model
 
 from src.tiles import ImageSlicer
+
+
+N_WORKERS = mp.cpu_count()
 
 
 @torch.no_grad()
@@ -45,3 +49,30 @@ class Predictor:
                                self.tile_step,
                                self.batch_size)
         return pred
+
+    def tile_image(self, image):
+        tiler = ImageSlicer(image.shape,
+                            tile_size=self.tile_size,
+                            tile_step=self.tile_step)
+
+        tiles = tiler.split(image, value=float(image.min()))
+        return tiles
+
+    def predict_tiles(self, tiles):
+        if len(tiles) > 8:
+            with mp.Pool(N_WORKERS) as pool:
+                tiles = pool.map(self.transforms, tiles)
+        else:
+            tiles = [self.transforms(tile) for tile in tiles]
+
+        loader = DataLoader(tiles, batch_size=self.batch_size)
+
+        preds_lst = []
+
+        for tiles_batch in loader:
+            pred_batch = self.model.predict(tiles_batch)
+            preds_lst.append(pred_batch)
+
+        pred = torch.cat(preds_lst, dim=0)
+
+        return pred.cpu().numpy()
