@@ -59,11 +59,7 @@ class Predictor:
         return tiles
 
     def predict_tiles(self, tiles):
-        if len(tiles) > 8:
-            with mp.Pool(N_WORKERS) as pool:
-                tiles = pool.map(self.transforms, tiles)
-        else:
-            tiles = [self.transforms(tile) for tile in tiles]
+        tiles = [self.transforms(tile) for tile in tiles]
 
         loader = DataLoader(tiles, batch_size=self.batch_size)
 
