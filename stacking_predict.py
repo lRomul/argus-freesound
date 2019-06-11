@@ -11,22 +11,18 @@ from src import config
 from src.stacking.predictor import StackPredictor
 
 
-NAME = "stacking_009"
+NAME = "stacking_010"
 
 EXPERIMENTS = [
     'auxiliary_001',
-    'auxiliary_007',
+    'auxiliary_004',
     'auxiliary_014',
-    'corr_noisy_003',
     'corr_noisy_004',
-    'corr_noisy_007',
-    'small_cat_002'
+    'corr_noisy_007'
 ]
 
 STACKING_EXPERIMENTS = [
-    'stacking_009_fcnet_40008',
-    'stacking_009_fcnet_43040',
-    'stacking_009_fcnet_45041'
+
 ]
 
 DEVICE = 'cuda'
