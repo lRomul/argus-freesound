@@ -2,6 +2,16 @@
 
 Source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019).
 
+## Solution 
+
+Key points:
+* [Mel-spectrograms](src/audio.py)
+* [CNN model with attention, skip connections and auxiliary loss](src/models/aux_skip_attention.py)
+* [Mixup augmentations](src/mixers.py) 
+* [Hand relabeling curated dataset samples with low score](corrections.json) 
+* [MLP stacking](train_stacking.py)
+* [Geometric mean blending](stacking_predict.py)
+
 ## Quick setup and start 
 
 ### Requirements 

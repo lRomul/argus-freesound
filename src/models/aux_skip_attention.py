@@ -3,6 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 
+# Source: https://github.com/luuuyi/CBAM.PyTorch
 class ChannelAttention(nn.Module):
     def __init__(self, in_planes, ratio=16):
         super(ChannelAttention, self).__init__()
@@ -22,6 +23,7 @@ class ChannelAttention(nn.Module):
         return self.sigmoid(out)
 
 
+# Source: https://github.com/luuuyi/CBAM.PyTorch
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size=7):
         super(SpatialAttention, self).__init__()

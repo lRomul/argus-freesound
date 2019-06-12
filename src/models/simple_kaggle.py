@@ -1,3 +1,4 @@
+# Source: https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch
 import torch
 from torch import nn
 import torch.nn.functional as F

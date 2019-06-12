@@ -1,4 +1,3 @@
-# Source: https://github.com/DCASE-REPO/dcase2019_task2_baseline/blob/master/evaluation.py
 import torch
 import numpy as np
 
@@ -32,6 +31,7 @@ class MultiCategoricalAccuracy(Metric):
         return self.correct / self.count
 
 
+# Source: https://github.com/DCASE-REPO/dcase2019_task2_baseline/blob/master/evaluation.py
 class LwlrapBase:
     """Computes label-weighted label-ranked average precision (lwlrap)."""
 
