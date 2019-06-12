@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Kaggle script build system template: https://github.com/lopuhin/kaggle-script-template
 import os
 import base64
 import gzip

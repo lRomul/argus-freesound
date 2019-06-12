@@ -65,4 +65,4 @@ For example take experiment `corr_noisy_007`:
     python predict_folds.py --experiment corr_noisy_007
     ```
    
-   Predictions, submission file and validation metrics will be in `data/predictions/corr_noisy_007`.
+   Predictions, submission file and validation metrics will be in `data/predictions/corr_noisy_007`

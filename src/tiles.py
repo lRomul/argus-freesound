@@ -1,5 +1,6 @@
 """Implementation of tile-based inference allowing to predict huge images that does not fit into GPU memory entirely
 in a sliding-window fashion and merging prediction mask back to full-resolution.
+Source: https://github.com/BloodAxe/pytorch-toolbelt/blob/develop/pytorch_toolbelt/inference/tiles.py
 """
 from typing import List
 
