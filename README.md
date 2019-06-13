@@ -15,7 +15,7 @@ Key points:
 
 ### Data preprocessing
 
-[Converting audio to log mel spectrograms](src/audio.py) inspired from [daisukelab's notebooks](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
+Log-scaled mel-spectrograms is the current "standard" for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's notebooks](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
 ```
 sampling_rate = 44100
 hop_length = 345 * 2
@@ -27,7 +27,7 @@ min_seconds = 0.5
 ```
 
 ### Augmentations 
-Several [augmentations](src/transforms.py) was applied on spectrograms while training: 
+Several [augmentations](src/transforms.py) was applied on spectrograms while training. Part of code from `transforms.py` with comments: 
 
 ```
 size = 256
@@ -48,6 +48,7 @@ transforms = Compose([
                             time_masking=0.20), 0.5),
     # Use librosa.feature.delta with order 1 and 2 for creating 2 additional channels 
     # then divide by 100
+
     ImageToTensor()                        
 ])
 ```
@@ -61,6 +62,9 @@ Some augmented spectrograms, looks crazy :)
 
 ### Ensemble 
 
+### Lab journal 
+
+The progress of the solution during the competition can be viewed in the laboratory journal [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas partially in Russian, sorry.
 
 ## Quick setup and start 
 
