@@ -15,7 +15,7 @@ Key points:
 
 ### Data preprocessing
 
-Log-scaled mel-spectrograms is the current "standard" for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's notebooks](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
+Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's notebooks](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
 ```
 sampling_rate = 44100
 hop_length = 345 * 2
@@ -27,7 +27,7 @@ min_seconds = 0.5
 ```
 
 ### Augmentations 
-Several [augmentations](src/transforms.py) was applied on spectrograms while training. Part of code from `transforms.py` with comments: 
+Several augmentations was applied on spectrograms while training. Part of code from [transforms.py](src/transforms.py) with comments: 
 
 ```
 size = 256
