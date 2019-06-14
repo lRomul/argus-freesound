@@ -47,9 +47,8 @@ transforms = Compose([
                             freq_masking=0.15,
                             time_masking=0.20), 0.5),
     # Use librosa.feature.delta with order 1 and 2 for creating 2 additional channels 
-    # then divide by 100
-
-    ImageToTensor()                        
+    # then divide by 100 
+    ImageToTensor()                  
 ])
 ```
 
