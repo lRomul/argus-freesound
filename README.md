@@ -43,7 +43,7 @@ transforms = Compose([
         RandomResizedCrop(scale=(0.8, 1.0), ratio=(1.7, 2.3)),
         prob=0.33
     ),
-    # Masking blocks of frequency channels, and masking blocks of time steps
+    # SpecAugment [1], masking blocks of frequency channels, and masking blocks of time steps
     UseWithProb(SpecAugment(num_mask=2,       
                             freq_masking=0.15,
                             time_masking=0.20), 0.5),
@@ -53,13 +53,17 @@ transforms = Compose([
 ])
 ```
 
-MixUp augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
+MixUp [2] augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
 In addition to the default MixUp method has been applied [SigmoidConcatMixer](src/mixers.py). it works like a smooth gradient transition from one clip to another over time.
 
 Some augmented spectrograms, it's looks crazy :)  
 ![augmentations](readme_images/augmentations.png)
 
 ### Model 
+
+Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) were used as a starting point. After numerous experiments, such an architecture was designed:
+
+![AuxSkipAttention](readme_images/AuxSkipAttention.png)
 
 ### Training 
 
@@ -133,3 +137,11 @@ For example take experiment `corr_noisy_007`:
     ```
    
    Predictions, submission file and validation metrics will be in `data/predictions/corr_noisy_007`
+
+## References
+
+[1] Daniel S. Park, William Chan, Yu Zhang, Chung-Cheng Chiu, Barret Zoph, Ekin D. Cubuk, Quoc V. Le, &quot;_SpecAugment: A Simple Data Augmentation Method for Automatic Speech Recognition_&quot;, [arXiv:1904.08779](https://arxiv.org/abs/1904.08779), 2019.
+
+[2] Hongyi Zhang, Moustapha Cisse, Yann N. Dauphin, and David Lopez-Paz, &quot;_mixup: Beyondempirical risk minimization_&quot;, [arXiv:1710.09412](https://arxiv.org/abs/1710.09412), 2017.
+
+[3] Eduardo Fonseca, Manoj Plakal, Daniel P. W. Ellis, Frederic Font, Xavier Favory, Xavier Serra, &quot;_Learning Sound Event Classifiers from Web Audio with Noisy Labels_&quot;, [arXiv:1901.01189](https://arxiv.org/abs/1901.01189), 2019.
