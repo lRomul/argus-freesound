@@ -8,10 +8,11 @@ Source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019]
 
 Key points:
 * Log-scaled mel-spectrograms
-* CNN model with attention and skip connections
+* CNN model with attention, skip connections and auxiliary classifiers
 * SpecAugment, Mixup augmentations 
 * Hand relabeling curated dataset samples with low score
 * Ensemble with MLP second-level model and geometric mean blending
+* Mixed precision training with `apex.amp`
 
 ### Data preprocessing
 
@@ -55,7 +56,7 @@ transforms = Compose([
 MixUp augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
 In addition to the default MixUp method has been applied [SigmoidConcatMixer](src/mixers.py). it works like a smooth gradient transition from one clip to another over time.
 
-Some augmented spectrograms, looks crazy :)  
+Some augmented spectrograms, it's looks crazy :)  
 ![augmentations](readme_images/augmentations.png)
 
 ### Model 
