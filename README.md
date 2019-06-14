@@ -78,6 +78,8 @@ Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classif
 
 ### Ensemble 
 
+In final submission were use geometric mean of 7 first-level models and 3 second-level models. As second-level models were used [MLP](src/stacking/models.py) trained with different hyperparameters. Seven first-level models were chosen by enumeration of combinations of trained experiments to finding best CV score. 
+
 ### Lab journal 
 
 The progress of the solution during the competition can be viewed in the [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas partially in Russian, sorry.
@@ -129,7 +131,7 @@ The provided dockerfile is supplied to build image with CUDA support and cuDNN.
  
 #### Single model
 
-For example take experiment `corr_noisy_007`:
+For example take experiment `corr_noisy_007`, which is now in the [train_folds.py](train_folds.py):
  
 * Train single 5 fold model
     
@@ -146,6 +148,11 @@ For example take experiment `corr_noisy_007`:
     ```
    
    Predictions, submission file and validation metrics will be in `data/predictions/corr_noisy_007`
+
+
+#### Ensemble
+
+If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), a laboratory journal can help with experiments commit hashes. In the future, I will probably make this pipeline more simply reproducible.
 
 ## References
 
