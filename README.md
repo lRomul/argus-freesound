@@ -54,10 +54,7 @@ transforms = Compose([
 ```
 
 MixUp augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
-In addition to the default MixUp method has been applied [SigmoidConcatMixer](src/mixers.py). it works like a smooth gradient transition from one clip to another.
-
-![](readme_images/sigmoidmixup.png)
-
+In addition to the default MixUp method has been applied [SigmoidConcatMixer](src/mixers.py). it works like a smooth gradient transition from one clip to another over time.
 
 Some augmented spectrograms, looks crazy :)  
 ![augmentations](readme_images/augmentations.png)
