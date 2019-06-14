@@ -12,7 +12,6 @@ Key points:
 * SpecAugment, Mixup augmentations 
 * Hand relabeling curated dataset samples with low score
 * Ensemble with MLP second-level model and geometric mean blending
-* Mixed precision training with `apex.amp`
 
 ### Data preprocessing
 
@@ -61,11 +60,21 @@ Some augmented spectrograms, it's looks crazy :)
 
 ### Model 
 
-Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) were used as a starting point. After numerous experiments, such an architecture was designed:
+Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) were used as a starting point. After numerous experiments, the [architecture](src/models/aux_skip_attention.py) with attention, skip connections and auxiliary classifiers was designed.
 
 ![AuxSkipAttention](readme_images/AuxSkipAttention.png)
 
 ### Training 
+
+* 5 random folds 
+* Loss: BCE on curated, Lsoft [3] with beta 0.7 on noisy data  
+* Optimizer: Adam with initial LR 0.0009  
+* LR scheduler: Reduce on plateau with patience 6, factor 0.6  
+* Use different probabilities for sampling curated and noisy data  
+* Training on hand relabeled curated samples with low lwlrap score by previous models  
+* Training with BCE on noisy samples with high lwlrap score by previous models
+* Mixed precision training with `apex.amp` allows use batch size 128 with input size 256x128  
+
 
 ### Ensemble 
 
