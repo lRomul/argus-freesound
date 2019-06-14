@@ -15,7 +15,7 @@ Key points:
 
 ### Data preprocessing
 
-Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's data preprocessing notebooks](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
+Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's data preprocessing notebook](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
 ```
 sampling_rate = 44100
 hop_length = 345 * 2
@@ -54,7 +54,7 @@ transforms = Compose([
 ```
 
 MixUp augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
-In addition to the default MixUp method has been applied `SigmoidConcatMixer`: 
+In addition to the default MixUp method has been applied [SigmoidConcatMixer](src/mixers.py). it works like a smooth gradient transition from one clip to another.
 
 ![](readme_images/sigmoidmixup.png)
 
