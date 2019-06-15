@@ -2,7 +2,7 @@
 
 ![spectrograms](readme_images/spectrograms.png)
 
-Source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). Target of competition is develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories.
+The source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). The target of competition is to develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories.
 
 ## Solution 
 
@@ -10,7 +10,7 @@ Key points:
 * Log-scaled mel-spectrograms
 * CNN model with attention, skip connections and auxiliary classifiers
 * SpecAugment, Mixup augmentations 
-* Hand relabeling curated dataset samples with low score
+* Hand relabeling curated dataset samples with a low score
 * Ensemble with MLP second-level model and geometric mean blending
 
 ### Data preprocessing
@@ -60,7 +60,7 @@ Some augmented spectrograms, it's looks crazy :)
 
 ### Model 
 
-Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) were used as a starting point. After numerous experiments, the [architecture](src/models/aux_skip_attention.py) with attention, skip connections and auxiliary classifiers was designed.
+Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) was used as a starting point. After numerous experiments, the [architecture](src/models/aux_skip_attention.py) with attention, skip connections and auxiliary classifiers was designed.
 
 ![AuxSkipAttention](readme_images/AuxSkipAttention.png)
 
@@ -69,16 +69,16 @@ Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classif
 * 5 random folds 
 * Loss: BCE on curated, Lsoft [3] with beta 0.7 on noisy data  
 * Optimizer: Adam with initial LR 0.0009  
-* LR scheduler: Reduce on plateau with patience 6, factor 0.6  
+* LR scheduler: Reduce on a plateau with patience 6, factor 0.6  
 * Use different probabilities for sampling curated and noisy data  
-* Training on hand relabeled curated samples with low lwlrap score by previous models  
-* Training with BCE on noisy samples with high lwlrap score by previous models
+* Training on hand relabeled curated samples with a low lwlrap score by previous models  
+* Training with BCE on noisy samples with a high lwlrap score by previous models
 * Mixed precision training with `apex.amp` allows use batch size 128 with input size 256x128  
 
 
 ### Ensemble 
 
-In final submission were use geometric mean of 7 first-level models and 3 second-level models. As second-level models were used [MLP](src/stacking/models.py) trained with different hyperparameters. Seven first-level models were chosen by enumeration of combinations of trained experiments to finding best CV score. 
+In final submission were use the geometric mean of 7 first-level models and 3 second-level models. As second-level models were used [MLP](src/stacking/models.py) trained with different hyperparameters. Seven first-level models were chosen by enumeration of combinations of trained experiments to finding highest CV score. 
 
 ### Lab journal 
 
@@ -91,7 +91,7 @@ The progress of the solution during the competition can be viewed in the [labora
 *  Nvidia drivers, CUDA >= 10.0, cuDNN >= 7
 *  [Docker](https://www.docker.com), [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) 
 
-The provided dockerfile is supplied to build image with CUDA support and cuDNN.
+The provided dockerfile is supplied to build an image with CUDA support and cuDNN.
 
 
 ### Preparations 
@@ -124,7 +124,7 @@ The provided dockerfile is supplied to build image with CUDA support and cuDNN.
     make run
     ```
 
-* Create file with folds split
+* Create a file with folds split
     ```bash
     python make_folds.py
     ```
