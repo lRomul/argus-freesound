@@ -157,7 +157,7 @@ If you want to reproduce the whole ensemble, you should train all experiments in
 
 ### Kernel build system 
 
-It was quite impossible to manage the project without a way to split the solution into modules. The idea of kernel building from the [first place solution of the Mercari Price Suggestion Challenge](https://www.kaggle.com/c/mercari-price-suggestion-challenge/discussion/50256#latest-315679) competition was used. You can find the build system template [here](https://github.com/lopuhin/kaggle-script-template). 
+It was quite impossible to manage the project without a way to split the solution into modules. The idea of kernel building from the [first place solution of the Mercari Price Suggestion Challenge](https://www.kaggle.com/c/mercari-price-suggestion-challenge/discussion/50256#latest-315679) was used. You can find the build system template [here](https://github.com/lopuhin/kaggle-script-template). 
 To create a submission, run `python build_kernel.py`, this would compress the whole project into scripts in `kernel` folder:
 * `kernel_template.py` - single model submission  
 * `stacking_kernel_template.py` - ensemble submission
