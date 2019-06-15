@@ -2,7 +2,7 @@
 
 ![spectrograms](readme_images/spectrograms.png)
 
-The source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). The target of competition is to develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories.
+The source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). The target of competition is to develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories. The main research question addressed in this competition is how to adequately exploit a small amount of reliable, manually-labeled data, and a larger quantity of noisy web audio data in a multi-label audio tagging task with a large vocabulary setting.
 
 ## Solution 
 
@@ -152,7 +152,16 @@ For example take experiment `corr_noisy_007`, which is now in the [train_folds.p
 
 #### Ensemble
 
-If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), a laboratory journal can help with experiments commit hashes. In the future, I will probably make this pipeline more simply reproducible.
+If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), a laboratory journal can help with experiments commit hashes. In the future, I will probably make this pipeline more simply reproducible.  
+
+
+### Kernel build system 
+
+It was quite impossible to manage the project without a way to split the solution into modules. The idea of kernel building from the [first place solution of the Mercari Price Suggestion Challenge](https://www.kaggle.com/c/mercari-price-suggestion-challenge/discussion/50256#latest-315679) competition was used. You can find the build system template [here](https://github.com/lopuhin/kaggle-script-template). 
+To create a submission, run `python build_kernel.py`, this would compress the whole project into scripts in `kernel` folder:
+* `kernel_template.py` - single model submission  
+* `stacking_kernel_template.py` - ensemble submission
+
 
 ## References
 
