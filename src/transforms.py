@@ -21,6 +21,7 @@ def gauss_noise(image, sigma_sq):
     return image
 
 
+# Source: https://www.kaggle.com/davids1992/specaugment-quick-implementation
 def spec_augment(spec: np.ndarray,
                  num_mask=2,
                  freq_masking=0.15,
