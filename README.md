@@ -13,6 +13,8 @@ Key points:
 * Hand relabeling curated dataset samples with a low score
 * Ensemble with MLP second-level model and geometric mean blending
 
+The [Argus](https://github.com/lRomul/argus) framework for PyTorch was used, which makes the learning process simpler and more compact.
+
 ### Data preprocessing
 
 Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's data preprocessing notebook](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
