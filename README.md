@@ -2,7 +2,7 @@
 
 ![spectrograms](readme_images/spectrograms.png)
 
-The source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). The target of competition is to develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories. The main research question addressed in this competition is how to adequately exploit a small amount of reliable, manually-labeled data, and a larger quantity of noisy web audio data in a multi-label audio tagging task with a large vocabulary setting.
+The source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). The aim of the competition is to develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories. The main research problem in this competition is to adequatly exploit a small amount of reliable, manually-labeled data, and a larger quantity of noisy web audio data in a multi-label audio tagging task with a large vocabulary setting.
 
 ## Solution 
 
@@ -10,14 +10,14 @@ Key points:
 * Log-scaled mel-spectrograms
 * CNN model with attention, skip connections and auxiliary classifiers
 * SpecAugment, Mixup augmentations 
-* Hand relabeling curated dataset samples with a low score
+* Hand relabeling of curated dataset samples with a low score
 * Ensemble with MLP second-level model and geometric mean blending
 
-The [Argus](https://github.com/lRomul/argus) framework for PyTorch was used, which makes the learning process simpler and more compact.
+The [Argus](https://github.com/lRomul/argus) framework for PyTorch was used which makes the learning process simpler and more compact.
 
 ### Data preprocessing
 
-Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution inspired from [daisukelab's data preprocessing notebook](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
+Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution is inspired by [daisukelab's data preprocessing notebook](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
 ```
 sampling_rate = 44100
 hop_length = 345 * 2
@@ -55,14 +55,14 @@ transforms = Compose([
 ```
 
 MixUp [2] augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
-In addition to the default MixUp method has been applied [SigmoidConcatMixer](src/mixers.py). it works like a smooth gradient transition from one clip to another over time.
+[SigmoidConcatMixer](src/mixers.py) was applied in addition to the default MixUp method. it works like a smooth gradient transition from one clip to another over time.
 
-Some augmented spectrograms, it's looks crazy :)  
+Some augmented spectrograms, they look crazy :)  
 ![augmentations](readme_images/augmentations.png)
 
 ### Model 
 
-Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) was used as a starting point. After numerous experiments, the [architecture](src/models/aux_skip_attention.py) with attention, skip connections and auxiliary classifiers was designed.
+Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) was used as a starting point. After numerous experiments, the original architecture was modified with attention, skip connections and auxiliary classifiers.
 
 ![AuxSkipAttention](readme_images/AuxSkipAttention.png)
 
@@ -75,16 +75,16 @@ Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classif
 * Use different probabilities for sampling curated and noisy data  
 * Training on hand relabeled curated samples with a low lwlrap score by previous models  
 * Training with BCE on noisy samples with a high lwlrap score by previous models
-* Mixed precision training with `apex.amp` allows use batch size 128 with input size 256x128  
+* Mixed precision training with apex.amp allows to use batch size 128 with input size 256x128  
 
 
 ### Ensemble 
 
-In final submission were used the geometric mean of 7 first-level models and 3 second-level models. As second-level models were used [MLP](src/stacking/models.py) trained with different hyperparameters. Seven first-level models were chosen by enumeration of combinations of trained experiments to finding highest CV score. 
+The geometric mean of 7 first-level models and 3 second-level models were used for final submission. [MLP](src/stacking/models.py) trained with different hyperparameters were used as second-level models. Seven first-level models were chosen by enumeration of combinations of training experiments to finding highest CV score. 
 
 ### Lab journal 
 
-The progress of the solution during the competition can be viewed in the [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas partially in Russian, sorry.
+The progress of the solution during the competition can be seen in the [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas partially in Russian, sorry.
 
 ## Quick setup and start 
 
