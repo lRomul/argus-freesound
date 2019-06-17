@@ -2,7 +2,7 @@
 
 ![spectrograms](readme_images/spectrograms.png)
 
-The source code of 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019). The aim of the competition is to develop an algorithm to tag audio data automatically using a diverse vocabulary of 80 categories. The main research problem in this competition is to adequatly exploit a small amount of reliable, manually-labeled data, and a larger quantity of noisy web audio data in a multi-label audio tagging task with a large vocabulary setting.
+This repo contains the source code of the 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019) Challenge. The goal of the competition is to develop an algorithm for automated multi-label audio tagging. The main research problem of this competition is to properly utilize a small amount of reliable, manually-labeled data, and a larger quantity of noisy audio data from the web in a multi-label classification task with a large vocabulary (80 categories).
 
 ## Solution 
 
@@ -10,14 +10,14 @@ Key points:
 * Log-scaled mel-spectrograms
 * CNN model with attention, skip connections and auxiliary classifiers
 * SpecAugment, Mixup augmentations 
-* Hand relabeling of curated dataset samples with a low score
-* Ensemble with MLP second-level model and geometric mean blending
+* Hand relabeling of the curated dataset samples with a low score
+* Ensembling with an MLP second-level model and a geometric mean blending
 
-The [Argus](https://github.com/lRomul/argus) framework for PyTorch was used which makes the learning process simpler and more compact.
+The [Argus](https://github.com/lRomul/argus) framework for PyTorch was employed. It makes the learning process more straightforward and the code briefer.
 
 ### Data preprocessing
 
-Log-scaled mel-spectrograms is the current standard for use with CNN for audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution is inspired by [daisukelab's data preprocessing notebook](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters: 
+Log-scaled mel-spectrograms is the modern standard way of the data representation in CNN-based audio scene classification. [Converting audio to spectrograms](src/audio.py) in this solution was inspired by the [daisukelab's data preprocessing notebook](https://www.kaggle.com/daisukelab/creating-fat2019-preprocessed-data). Audio config parameters:  
 ```
 sampling_rate = 44100
 hop_length = 345 * 2
@@ -29,7 +29,7 @@ min_seconds = 0.5
 ```
 
 ### Augmentations 
-Several augmentations was applied on spectrograms while training. Part of code from [transforms.py](src/transforms.py) with comments: 
+Several augmentations were applied on spectrograms during the training stage. The part of [transforms.py](src/transforms.py) lists augmentation techniques:
 
 ```
 size = 256
@@ -54,15 +54,15 @@ transforms = Compose([
 ])
 ```
 
-MixUp [2] augmentation was very useful in competition. This method creates a training example based on the weighted average of the two samples.  
-[SigmoidConcatMixer](src/mixers.py) was applied in addition to the default MixUp method. it works like a smooth gradient transition from one clip to another over time.
+MixUp [2] augmentation was found to be beneficial in the competition. This method creates a new training sample based on the weighted average of two items from the original dataset.
+Additionally, [SigmoidConcatMixer](src/mixers.py) was applied. It produces a merged sample with a smooth (sigmoid-based) transition from one audio-clip to another over time.
 
-Some augmented spectrograms, they look crazy :)  
+There are some augmented spectrograms, and they look crazy :)  
 ![augmentations](readme_images/augmentations.png)
 
 ### Model 
 
-Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) was used as a starting point. After numerous experiments, the original architecture was modified with attention, skip connections and auxiliary classifiers.
+Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classifier-with-pytorch) was used as a starting point. After numerous experiments, the original architecture was modified with attention, skip connections, and auxiliary classifiers.
 
 ![AuxSkipAttention](readme_images/AuxSkipAttention.png)
 
@@ -75,16 +75,16 @@ Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classif
 * Use different probabilities for sampling curated and noisy data  
 * Training on hand relabeled curated samples with a low lwlrap score by previous models  
 * Training with BCE on noisy samples with a high lwlrap score by previous models
-* Mixed precision training with apex.amp allows to use batch size 128 with input size 256x128  
+* Mixed precision training with apex.amp allows using batch size 128 with input size 256x128 px
 
 
 ### Ensemble 
 
-The geometric mean of 7 first-level models and 3 second-level models were used for final submission. [MLP](src/stacking/models.py) trained with different hyperparameters were used as second-level models. Seven first-level models were chosen by enumeration of combinations of training experiments to finding highest CV score. 
+The geometric mean of 7 first-level models and 3 second-level models was used for the final submission. [MLPs](src/stacking/models.py) trained with different hyperparameters were used as second-level models. Seven first-level models were chosen by enumeration of combinations of training experiments to finding the highest CV score. 
 
 ### Lab journal 
 
-The progress of the solution during the competition can be seen in the [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas partially in Russian, sorry.
+The progress of the solution during the competition can be seen in the [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas, but it is partially in Russian, sorry :).
 
 ## Quick setup and start 
 
@@ -93,7 +93,7 @@ The progress of the solution during the competition can be seen in the [laborato
 *  Nvidia drivers, CUDA >= 10.0, cuDNN >= 7
 *  [Docker](https://www.docker.com), [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) 
 
-The provided dockerfile is supplied to build an image with CUDA support and cuDNN.
+The provided [Dockerfile](Dockerfile) is supplied to build an image with CUDA support and cuDNN.
 
 
 ### Preparations 
@@ -133,7 +133,7 @@ The provided dockerfile is supplied to build an image with CUDA support and cuDN
  
 #### Single model
 
-For example take experiment `corr_noisy_007`, which is now in the [train_folds.py](train_folds.py):
+For example, take the experiment `corr_noisy_007`, which currently is in the [train_folds.py](train_folds.py):
  
 * Train single 5 fold model
     
@@ -149,18 +149,18 @@ For example take experiment `corr_noisy_007`, which is now in the [train_folds.p
     python predict_folds.py --experiment corr_noisy_007
     ```
    
-   Predictions, submission file and validation metrics will be in `data/predictions/corr_noisy_007`
+   Predictions, submission file, and validation metrics will be saved in `data/predictions/corr_noisy_007`
 
 
 #### Ensemble
 
-If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), a laboratory journal can help with experiments commit hashes. In the future, I will probably make this pipeline more simply reproducible.  
+If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), the laboratory journal can help with experiments commit hashes. In the future, I will probably make this pipeline more simply reproducible.  
 
 
 ### Kernel build system 
 
-It was quite impossible to manage the project without a way to split the solution into modules. The idea of kernel building from the [first place solution of the Mercari Price Suggestion Challenge](https://www.kaggle.com/c/mercari-price-suggestion-challenge/discussion/50256#latest-315679) was used. You can find the build system template [here](https://github.com/lopuhin/kaggle-script-template). 
-To create a submission, run `python build_kernel.py`, this would compress the whole project into scripts in `kernel` folder:
+It was quite challenging to manage the project without a way to split the solution into modules. The idea of kernel building from the [first place solution of the Mercari Price Suggestion Challenge](https://www.kaggle.com/c/mercari-price-suggestion-challenge/discussion/50256#latest-315679) was used. You can find the build system template [here](https://github.com/lopuhin/kaggle-script-template). 
+To create a submission, run `python build_kernel.py`, this would compress the whole project into scripts in the `kernel` folder:
 * `kernel_template.py` - single model submission  
 * `stacking_kernel_template.py` - ensemble submission
 
