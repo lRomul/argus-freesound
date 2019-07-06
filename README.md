@@ -90,11 +90,18 @@ The progress of the solution during the competition can be seen in the [laborato
 
 ### Requirements 
 
-*  Nvidia drivers, CUDA >= 10.0, cuDNN >= 7
-*  [Docker](https://www.docker.com), [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) 
+#### Software
+
+* Linux
+* Nvidia drivers, CUDA >= 10.0, cuDNN >= 7
+* [Docker](https://www.docker.com), [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) 
 
 The provided [Dockerfile](Dockerfile) is supplied to build an image with CUDA support and cuDNN.
 
+#### Hardware
+
+* 32GB of RAM
+* 2080ti or another GPU with fp16 support and at least 12GB memory 
 
 ### Preparations 
 
@@ -133,29 +140,36 @@ The provided [Dockerfile](Dockerfile) is supplied to build an image with CUDA su
  
 #### Single model
 
-For example, take the experiment `corr_noisy_007`, which currently is in the [train_folds.py](train_folds.py):
+For example, take the experiment `corr_noisy_008`, which currently is in the [train_folds.py](train_folds.py):
  
 * Train single 5 fold model
     
     ```bash
-    python train_folds.py --experiment corr_noisy_007
+    python train_folds.py --experiment corr_noisy_008
     ```
     
-    Model weights will be in `data/experiments/corr_noisy_007`
+    Model weights will be in `data/experiments/corr_noisy_008`
     
 * Predict train and test, evaluate metrics 
 
     ```bash
-    python predict_folds.py --experiment corr_noisy_007
+    python predict_folds.py --experiment corr_noisy_008
     ```
    
-   Predictions, submission file, and validation metrics will be saved in `data/predictions/corr_noisy_007`
+   Predictions, submission file, and validation metrics will be saved in `data/predictions/corr_noisy_008`
 
 
 #### Ensemble
 
-If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), the laboratory journal can help with experiments commit hashes. In the future, I will probably make this pipeline more simply reproducible.  
+If you want to reproduce the whole ensemble, you should train all experiments in [stacking_predict.py](stacking_predict.py), script [ensemble_pipeline.sh](ensemble_pipeline.sh) can help:
 
+* Download and extract data.
+* Run full pipeline 
+    ```bash
+    ./ensemble_pipeline.sh
+    ```
+* Kernel code will be saved in  `kernel/stacking_kernel_template.py`. 
+* Models weights will be saved in `data/experiments`. You can zip `experiments` folder and upload the archive to kaggle dataset. 
 
 ### Kernel build system 
 

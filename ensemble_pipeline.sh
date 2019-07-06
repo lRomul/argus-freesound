@@ -3,6 +3,7 @@ set -e
 NAME="argus-freesound"
 DOCKER_OPTIONS="--rm -it --ipc=host -v $(pwd):/workdir --name=${NAME} ${NAME}"
 
+git checkout master
 docker build -t ${NAME} .
 
 # Build kernel
