@@ -2,7 +2,7 @@
 
 ![spectrograms](readme_images/spectrograms.png)
 
-This repo contains the source code of the 6th place solution [public LB] for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019) Challenge. The goal of the competition is to develop an algorithm for automated multi-label audio tagging. The main research problem of this competition is to properly utilize a small amount of reliable, manually-labeled data, and a larger quantity of noisy audio data from the web in a multi-label classification task with a large vocabulary (80 categories).
+This repo contains the source code of the 1st place solution for [Freesound Audio Tagging 2019](https://www.kaggle.com/c/freesound-audio-tagging-2019) Challenge. The goal of the competition is to develop an algorithm for automated multi-label audio tagging. The main research problem of this competition is to properly utilize a small amount of reliable, manually-labeled data, and a larger quantity of noisy audio data from the web in a multi-label classification task with a large vocabulary (80 categories).
 
 ## Solution 
 
