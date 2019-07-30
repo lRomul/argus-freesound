@@ -16,8 +16,8 @@ RUN apt-get update &&\
 RUN pip3 install --no-cache-dir numpy==1.16.2
 
 # Install PyTorch
-RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.1.post2-cp36-cp36m-linux_x86_64.whl &&\
-    pip3 install torchvision==0.2.2 &&\
+RUN pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl &&\
+    pip3 install https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl &&\
     rm -rf ~/.cache/pip
 
 # Install python ML packages
@@ -31,7 +31,8 @@ RUN pip3 install --no-cache-dir \
     scikit-image==0.14.2 \
     librosa==0.6.3 \
     pytorch-argus==0.0.8 \
-    sounddevice==0.3.13
+    sounddevice==0.3.13 \
+    onnx==1.5.0
 
 RUN git clone https://github.com/NVIDIA/apex &&\
     cd apex &&\
