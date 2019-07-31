@@ -32,7 +32,9 @@ RUN pip3 install --no-cache-dir \
     librosa==0.6.3 \
     pytorch-argus==0.0.8 \
     sounddevice==0.3.13 \
-    onnx==1.5.0
+    onnx==1.5.0 \
+    onnxruntime==0.4.0 \
+    onnx-coreml==0.4.0
 
 RUN git clone https://github.com/NVIDIA/apex &&\
     cd apex &&\
