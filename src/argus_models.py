@@ -11,6 +11,7 @@ from src.models.simple_attention import SimpleAttention
 from src.models.skip_attention import SkipAttention
 from src.models.aux_skip_attention import AuxSkipAttention
 from src.models.rnn_aux_skip_attention import RnnAuxSkipAttention
+from src.models.simple_coreml import SimpleCoreML
 from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss, BCEMaxOutlierLoss
 from src import config
 
@@ -25,7 +26,8 @@ class FreesoundModel(Model):
         'SimpleAttention': SimpleAttention,
         'SkipAttention': SkipAttention,
         'AuxSkipAttention': AuxSkipAttention,
-        'RnnAuxSkipAttention': RnnAuxSkipAttention
+        'RnnAuxSkipAttention': RnnAuxSkipAttention,
+        'SimpleCoreML': SimpleCoreML
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
@@ -70,6 +72,7 @@ class FreesoundModel(Model):
             loss = 0
             for pred, weight in zip(prediction, self.aux_weights):
                 loss += self.loss(pred, target, noisy) * weight
+            prediction = prediction[0]
         else:
             loss = self.loss(prediction, target, noisy)
         if self.use_amp:
@@ -82,7 +85,7 @@ class FreesoundModel(Model):
         prediction = deep_detach(prediction)
         target = deep_detach(target)
         return {
-            'prediction': self.prediction_transform(prediction[0]),
+            'prediction': self.prediction_transform(prediction),
             'target': target,
             'loss': loss.item(),
             'noisy': noisy
@@ -98,10 +101,11 @@ class FreesoundModel(Model):
                 loss = 0
                 for pred, weight in zip(prediction, self.aux_weights):
                     loss += self.loss(pred, target, noisy) * weight
+                prediction = prediction[0]
             else:
                 loss = self.loss(prediction, target, noisy)
             return {
-                'prediction': self.prediction_transform(prediction[0]),
+                'prediction': self.prediction_transform(prediction),
                 'target': target,
                 'loss': loss.item(),
                 'noisy': noisy

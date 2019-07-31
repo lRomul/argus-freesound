@@ -33,14 +33,10 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('AuxSkipAttention', {
+    'nn_module': ('SimpleCoreML', {
         'num_classes': len(config.classes),
         'base_size': 64,
-        'dropout': 0.4,
-        'ratio': 16,
-        'kernel_size': 7,
-        'last_filters': 8,
-        'last_fc': 4
+        'dropout': 0.2
     }),
     'loss': ('OnlyNoisyLSoftLoss', {
         'beta': 0.7,
@@ -49,9 +45,6 @@ PARAMS = {
     }),
     'optimizer': ('Adam', {'lr': 0.0009}),
     'device': 'cuda',
-    'aux': {
-        'weights': [1.0, 0.4, 0.2, 0.1]
-    },
     'amp': {
         'opt_level': 'O2',
         'keep_batchnorm_fp32': True,
@@ -71,7 +64,8 @@ def train_fold(save_dir, train_folds, val_folds,
                                      spec_num_mask=2,
                                      spec_freq_masking=0.15,
                                      spec_time_masking=0.20,
-                                     spec_prob=0.5)
+                                     spec_prob=0.5,
+                                     use_delta=False)
 
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
