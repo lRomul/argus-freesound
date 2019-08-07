@@ -168,7 +168,7 @@ class ImageToTensor:
             accelerate = librosa.feature.delta(image, order=2)
             image = np.stack([image, delta, accelerate], axis=0)
         else:
-            image = np.stack([image, image, image], axis=0)
+            image = image[np.newaxis]
         image = image.astype(np.float32) / 100
         image = torch.from_numpy(image)
         return image

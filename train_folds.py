@@ -27,6 +27,7 @@ CORR_NOISY_PROB = 0.42
 MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
+USE_DELTA = False
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -35,6 +36,7 @@ SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
     'nn_module': ('AuxSkipAttentionCoreML', {
         'num_classes': len(config.classes),
+        'in_channels': 1,
         'base_size': 64,
         'dropout': 0.4,
         'ratio': 16,
@@ -72,7 +74,7 @@ def train_fold(save_dir, train_folds, val_folds,
                                      spec_freq_masking=0.15,
                                      spec_time_masking=0.20,
                                      spec_prob=0.5,
-                                     use_delta=True)
+                                     use_delta=USE_DELTA)
 
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
@@ -97,7 +99,9 @@ def train_fold(save_dir, train_folds, val_folds,
                                   size=DATASET_SIZE)
 
     val_dataset = FreesoundDataset(folds_data, val_folds,
-                                   get_transforms(False, CROP_SIZE))
+                                   get_transforms(False,
+                                                  CROP_SIZE,
+                                                  use_delta=USE_DELTA))
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
                               shuffle=True, drop_last=True,
                               num_workers=NUM_WORKERS)

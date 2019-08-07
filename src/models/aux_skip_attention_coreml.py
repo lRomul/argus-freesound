@@ -35,7 +35,6 @@ class SpatialAttention(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        # print(x.shape)
         avg_out = torch.mean(x, dim=1, keepdim=True)
         # max_out, _ = torch.max(x, dim=1, keepdim=True)
         # x = torch.cat([avg_out, max_out], dim=1)
@@ -129,12 +128,12 @@ class AuxBlock(nn.Module):
 
 
 class AuxSkipAttentionCoreML(nn.Module):
-    def __init__(self, num_classes, base_size=64,
+    def __init__(self, num_classes, in_channels=1, base_size=64,
                  dropout=0.2, ratio=16, kernel_size=7,
                  last_filters=8, last_fc=2):
         super().__init__()
 
-        self.conv1 = ConvBlock(in_channels=3, out_channels=base_size)
+        self.conv1 = ConvBlock(in_channels=in_channels, out_channels=base_size)
         self.skip1 = SkipBlock(in_channels=base_size, out_channels=base_size*8,
                                scale_factor=8)
 
