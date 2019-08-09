@@ -60,10 +60,12 @@ folds = list(range(n_folds))
 class audio:
     sampling_rate = 44100
     hop_length = 345 * 2
-    fmin = 20
-    fmax = sampling_rate // 2
-    n_mels = 128
-    n_fft = n_mels * 20
+    fmin = 133.3333
+    fmax = 6853.844238
+    n_mels = 40
+    n_fft = 1024
+    power = 1
+    power_to_db = True
     min_seconds = 0.5
 
     @classmethod

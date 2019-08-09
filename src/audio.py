@@ -40,8 +40,10 @@ def audio_to_melspectrogram(audio):
                                                  hop_length=config.hop_length,
                                                  n_fft=config.n_fft,
                                                  fmin=config.fmin,
-                                                 fmax=config.fmax)
-    spectrogram = librosa.power_to_db(spectrogram)
+                                                 fmax=config.fmax,
+                                                 power=config.power)
+    if config.power_to_db:
+        spectrogram = librosa.power_to_db(spectrogram)
     spectrogram = spectrogram.astype(np.float32)
     return spectrogram
 
