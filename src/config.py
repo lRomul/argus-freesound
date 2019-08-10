@@ -65,7 +65,7 @@ class audio:
     n_mels = 40
     n_fft = 1024
     power = 1
-    power_to_db = True
+    power_to_db = False
     min_seconds = 0.5
 
     @classmethod
