@@ -11,14 +11,18 @@ from matplotlib.animation import FuncAnimation
 
 config.kernel = True
 
-model_path = '/workdir/data/experiments/corr_noisy_007/fold_0/model-072-0.886906.pth'
+model_path = '/workdir/data/experiments/mini_asa_coreml_002/fold_0/model-051-0.829581.pth'
 
 DEVICE = 'cpu'
 CROP_SIZE = 256
+USE_DELTA = False
+NORMALIZE = True
 BATCH_SIZE = 16
 TILE_STEP = 2
 
-transforms = get_transforms(False, CROP_SIZE)
+transforms = get_transforms(False, CROP_SIZE,
+                            use_delta=USE_DELTA,
+                            normalize=NORMALIZE)
 
 predictor = Predictor(model_path, transforms,
                       BATCH_SIZE,
