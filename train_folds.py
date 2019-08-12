@@ -28,7 +28,7 @@ MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
 USE_DELTA = False
-NORMALIZE = False
+NORMALIZE = True
 if config.kernel:
     NUM_WORKERS = 2
 else:
