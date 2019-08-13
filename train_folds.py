@@ -35,7 +35,7 @@ else:
     NUM_WORKERS = 8
 SAVE_DIR = config.experiments_dir / args.experiment
 PARAMS = {
-    'nn_module': ('AuxSkipAttentionCoreML', {
+    'nn_module': ('MiniASACoreML', {
         'num_classes': len(config.classes),
         'in_channels': 1,
         'base_size': 64,

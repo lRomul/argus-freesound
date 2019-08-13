@@ -13,6 +13,7 @@ from src.models.aux_skip_attention import AuxSkipAttention
 from src.models.rnn_aux_skip_attention import RnnAuxSkipAttention
 from src.models.simple_coreml import SimpleCoreML
 from src.models.aux_skip_attention_coreml import AuxSkipAttentionCoreML
+from src.models.mini_asa_coreml import MiniASACoreML
 from src.losses import OnlyNoisyLqLoss, OnlyNoisyLSoftLoss, BCEMaxOutlierLoss
 from src import config
 
@@ -29,7 +30,8 @@ class FreesoundModel(Model):
         'AuxSkipAttention': AuxSkipAttention,
         'RnnAuxSkipAttention': RnnAuxSkipAttention,
         'SimpleCoreML': SimpleCoreML,
-        'AuxSkipAttentionCoreML': AuxSkipAttentionCoreML
+        'AuxSkipAttentionCoreML': AuxSkipAttentionCoreML,
+        'MiniASACoreML': MiniASACoreML
     }
     loss = {
         'OnlyNoisyLqLoss': OnlyNoisyLqLoss,
