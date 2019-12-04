@@ -28,6 +28,7 @@ MIXER_PROB = 0.8
 WRAP_PAD_PROB = 0.5
 CORRECTIONS = True
 USE_DELTA = False
+NORMALIZE = True
 if config.kernel:
     NUM_WORKERS = 2
 else:
@@ -74,7 +75,8 @@ def train_fold(save_dir, train_folds, val_folds,
                                      spec_freq_masking=0.15,
                                      spec_time_masking=0.20,
                                      spec_prob=0.5,
-                                     use_delta=USE_DELTA)
+                                     use_delta=USE_DELTA,
+                                     normalize=NORMALIZE)
 
     mixer = RandomMixer([
         SigmoidConcatMixer(sigmoid_range=(3, 12)),
@@ -98,10 +100,12 @@ def train_fold(save_dir, train_folds, val_folds,
                                   p=dataset_probs,
                                   size=DATASET_SIZE)
 
+    val_transforms = get_transforms(False,
+                                    CROP_SIZE,
+                                    use_delta=USE_DELTA,
+                                    normalize=NORMALIZE)
     val_dataset = FreesoundDataset(folds_data, val_folds,
-                                   get_transforms(False,
-                                                  CROP_SIZE,
-                                                  use_delta=USE_DELTA))
+                                   val_transforms)
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE,
                               shuffle=True, drop_last=True,
                               num_workers=NUM_WORKERS)

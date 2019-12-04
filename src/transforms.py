@@ -159,8 +159,9 @@ class RandomGaussianBlur:
 
 
 class ImageToTensor:
-    def __init__(self, use_delta=True):
+    def __init__(self, use_delta=True, normalize=True):
         self.use_delta = use_delta
+        self.normalize = normalize
 
     def __call__(self, image):
         if self.use_delta:
@@ -169,7 +170,9 @@ class ImageToTensor:
             image = np.stack([image, delta, accelerate], axis=0)
         else:
             image = image[np.newaxis]
-        image = image.astype(np.float32) / 100
+        image = image.astype(np.float32)
+        if self.normalize:
+            image = image / 100
         image = torch.from_numpy(image)
         return image
 
@@ -224,7 +227,8 @@ def get_transforms(train, size,
                    spec_freq_masking=0.15,
                    spec_time_masking=0.20,
                    spec_prob=0.5,
-                   use_delta=True):
+                   use_delta=True,
+                   normalize=True):
     if train:
         transforms = Compose([
             OneOf([
@@ -239,12 +243,12 @@ def get_transforms(train, size,
             UseWithProb(SpecAugment(num_mask=spec_num_mask,
                                     freq_masking=spec_freq_masking,
                                     time_masking=spec_time_masking), spec_prob),
-            ImageToTensor(use_delta=use_delta)
+            ImageToTensor(use_delta=use_delta, normalize=normalize)
         ])
     else:
         transforms = Compose([
             PadToSize(size),
             CenterCrop(size),
-            ImageToTensor(use_delta=use_delta)
+            ImageToTensor(use_delta=use_delta, normalize=normalize)
         ])
     return transforms
