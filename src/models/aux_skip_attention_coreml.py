@@ -130,8 +130,9 @@ class AuxBlock(nn.Module):
 class AuxSkipAttentionCoreML(nn.Module):
     def __init__(self, num_classes, in_channels=1, base_size=64,
                  dropout=0.2, ratio=16, kernel_size=7,
-                 last_filters=8, last_fc=2):
+                 last_filters=8, last_fc=2, return_aux=True):
         super().__init__()
+        self.return_aux = return_aux
 
         self.conv1 = ConvBlock(in_channels=in_channels, out_channels=base_size)
         self.skip1 = SkipBlock(in_channels=base_size, out_channels=base_size*8,
@@ -190,4 +191,8 @@ class AuxSkipAttentionCoreML(nn.Module):
         x = self.avg_pool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
-        return x, aux3, aux2, aux1
+
+        if self.return_aux:
+            return x, aux3, aux2, aux1
+        else:
+            return x
