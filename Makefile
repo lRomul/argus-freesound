@@ -1,5 +1,12 @@
 NAME=argus-freesound
 
+GPUS?=all
+ifeq ($(GPUS),none)
+	GPUS_OPTION=
+else
+	GPUS_OPTION=--gpus=$(GPUS)
+endif
+
 .PHONY: all build stop run 
 
 all: stop build run
@@ -12,7 +19,8 @@ stop:
 	-docker rm $(NAME)
 
 run:
-	nvidia-docker run --rm -it \
+	docker run --rm -it \
+		$(GPUS_OPTION) \
 		--net=host \
 		--ipc=host \
 		-v $(shell pwd):/workdir \
