@@ -9,7 +9,7 @@ from pathlib import Path
 IGNORE_LIST = ["data", "build"]
 
 PACKAGES = [
-    'https://github.com/lRomul/argus.git'
+    ('https://github.com/lRomul/argus.git', 'v0.0.8')
 ]
 
 
@@ -27,11 +27,11 @@ def check_ignore(path: Path, ignore_list):
     return True
 
 
-def clone_package(git_url):
+def clone_package(git_url, branch="master"):
     name = Path(git_url).stem
     os.system('mkdir -p tmp')
     os.system(f'rm -rf tmp/{name}')
-    os.system(f'cd tmp && git clone {git_url}')
+    os.system(f'cd tmp && git clone --depth 1 -b {branch} {git_url}')
     os.system(f'cp -R tmp/{name}/{name} .')
     os.system(f'rm -rf tmp/{name}')
 
@@ -43,8 +43,8 @@ def build_script(ignore_list, packages, template_name='kernel_template.py'):
         if check_ignore(path, ignore_list + packages):
             to_encode.append(path)
 
-    for package in packages:
-        clone_package(package)
+    for package, branch in packages:
+        clone_package(package, branch)
         package_name = Path(package).stem
         for path in Path(package_name).glob('**/*'):
             if check_ignore(path, ignore_list):
