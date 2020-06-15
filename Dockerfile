@@ -29,7 +29,9 @@ RUN pip3 install --no-cache-dir \
     scikit-learn==0.20.2 \
     scikit-image==0.14.2 \
     librosa==0.6.3 \
-    pytorch-argus==0.0.8
+    pytorch-argus==0.0.8 \
+    numba==0.43.0 \
+    llvmlite==0.32.1
 
 RUN git clone https://github.com/NVIDIA/apex &&\
     cd apex &&\
