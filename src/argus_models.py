@@ -53,18 +53,11 @@ class FreesoundModel(Model):
                 loss_scale=params['amp']['loss_scale']
             )
 
-    def prepare_batch(self, batch, device):
-        input, target, noisy = batch
-        input = deep_to(input, device, non_blocking=True)
-        target = deep_to(target, device, non_blocking=True)
-        noisy = deep_to(noisy, device, non_blocking=True)
-        return input, target, noisy
-
-    def train_step(self, batch)-> dict:
+    def train_step(self, batch, state) -> dict:
         if not self.nn_module.training:
             self.nn_module.train()
         self.optimizer.zero_grad()
-        input, target, noisy = self.prepare_batch(batch, self.device)
+        input, target, noisy = deep_to(batch, self.device, non_blocking=True)
         prediction = self.nn_module(input)
         if self.aux_weights is not None:
             loss = 0
@@ -88,11 +81,11 @@ class FreesoundModel(Model):
             'noisy': noisy
         }
 
-    def val_step(self, batch) -> dict:
+    def val_step(self, batch, state) -> dict:
         if self.nn_module.training:
             self.nn_module.eval()
         with torch.no_grad():
-            input, target, noisy = self.prepare_batch(batch, self.device)
+            input, target, noisy = deep_to(batch, self.device, non_blocking=True)
             prediction = self.nn_module(input)
             if self.aux_weights is not None:
                 loss = 0
