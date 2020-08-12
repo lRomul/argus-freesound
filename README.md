@@ -82,6 +82,8 @@ Model from [mhiro2's kernel](https://www.kaggle.com/mhiro2/simple-2d-cnn-classif
 
 The geometric mean of 7 first-level models and 3 second-level models was used for the final submission. [MLPs](src/stacking/models.py) trained with different hyperparameters were used as second-level models. Seven first-level models were chosen by enumeration of combinations of training experiments to finding the highest CV score. 
 
+Final submission models weights: [google drive](https://drive.google.com/file/d/1g2_OVSuGz-MHIrRQF2RExTOqMaH5h5Fq/view?usp=sharing)
+
 ### Lab journal 
 
 The progress of the solution during the competition can be seen in the [laboratory journal](https://docs.google.com/spreadsheets/d/1uOp2Du3CROtpg7TuSFmSejyXQe2Dp8DGh5Dm5onBWfc/edit?usp=sharing). It describes all the experiments and ideas, but it is partially in Russian, sorry :).
