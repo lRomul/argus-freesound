@@ -1,0 +1,14 @@
+numpy==1.18.4
+torch==1.5.1
+torchvision==0.6.0
+opencv-python==3.4.2.17
+scipy==1.2.1
+matplotlib==3.0.3
+pandas==0.24.1
+jupyter==1.0.0
+scikit-learn==0.20.2
+scikit-image==0.14.2
+librosa==0.6.3
+pytorch-argus==0.1.2
+numba==0.43.0
+llvmlite==0.32.1
