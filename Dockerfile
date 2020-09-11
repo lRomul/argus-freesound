@@ -13,6 +13,7 @@ RUN apt-get update &&\
     rm -rf /var/lib/apt/lists/* &&\
     rm -rf /var/cache/apt/archives/*
 
+RUN pip3 install --upgrade pip==20.2.3
 RUN pip3 install --no-cache-dir numpy==1.18.4
 
 # Install PyTorch
