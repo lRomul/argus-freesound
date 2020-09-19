@@ -1,4 +1,5 @@
 NAME?=argus-freesound
+COMMAND?=bash
 
 GPUS?=all
 ifeq ($(GPUS),none)
@@ -28,7 +29,7 @@ run:
 		-v $(shell pwd):/workdir \
 		--name=$(NAME) \
 		$(NAME) \
-		bash
+		$(COMMAND)
 	docker attach $(NAME)
 
 .PHONY: attach
@@ -41,4 +42,4 @@ logs:
 
 .PHONY: exec
 exec:
-	docker exec -it $(NAME) bash
+	docker exec -it $(NAME) $(COMMAND)
