@@ -12,3 +12,5 @@ librosa==0.6.3
 pytorch-argus==0.1.2
 numba==0.43.0
 llvmlite==0.32.1
+sounddevice==0.3.13
+gdown==3.12.2

@@ -180,6 +180,13 @@ To create a submission, run `python build_kernel.py`, this would compress the wh
 * `kernel_template.py` - single model submission  
 * `stacking_kernel_template.py` - ensemble submission
 
+### Live audio demo 
+
+Run recognition on the audio coming from the microphone.
+ 
+```bash
+make run-demo
+```
 
 ## References
 

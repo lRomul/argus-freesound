@@ -43,3 +43,18 @@ logs:
 .PHONY: exec
 exec:
 	docker exec -it $(NAME) $(COMMAND)
+
+.PHONY: run-demo
+run-demo:
+	xhost local:root
+	docker run --rm -it \
+		--net=host \
+		--ipc=host \
+		-v /tmp/.X11-unix:/tmp/.X11-unix \
+		-v $(HOME)/.Xauthority:/root/.Xauthority \
+		-e DISPLAY=$(shell echo ${DISPLAY}) \
+		--device /dev/snd:/dev/snd \
+		-v $(shell pwd):/workdir \
+		--name=$(NAME) \
+		$(NAME) \
+		python demo.py
