@@ -1,5 +1,6 @@
 NAME?=argus-freesound
 COMMAND?=bash
+OPTIONS?=
 
 GPUS?=all
 ifeq ($(GPUS),none)
@@ -23,6 +24,7 @@ stop:
 .PHONY: run
 run:
 	docker run --rm -dit \
+		$(OPTIONS) \
 		$(GPUS_OPTION) \
 		--net=host \
 		--ipc=host \
@@ -42,12 +44,13 @@ logs:
 
 .PHONY: exec
 exec:
-	docker exec -it $(NAME) $(COMMAND)
+	docker exec -it $(OPTIONS) $(NAME) $(COMMAND)
 
 .PHONY: run-demo
 run-demo:
 	xhost local:root
 	docker run --rm -it \
+		$(OPTIONS) \
 		--net=host \
 		--ipc=host \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
