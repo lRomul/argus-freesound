@@ -9,7 +9,7 @@ jupyter==1.0.0
 scikit-learn==0.20.2
 scikit-image==0.14.2
 librosa==0.6.3
-pytorch-argus==0.2.0
+pytorch-argus==0.2.1
 numba==0.43.0
 llvmlite==0.32.1
 sounddevice==0.3.13
